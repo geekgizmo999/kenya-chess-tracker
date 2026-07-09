@@ -89,16 +89,22 @@
   .support h2{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin:0 0 6px;}
   .support p{color:var(--cream-dim);font-size:14px;margin:0;max-width:420px;line-height:1.5;}
   .support-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-  .btn-coffee{
-    display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--bg-void);
-    padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;
-  }
-  .btn-coffee:hover{opacity:.85;}
   .mpesa-box{
     font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--bg-void);
     border:1px solid var(--line);border-radius:6px;padding:10px 14px;color:var(--cream);
   }
   .mpesa-box b{color:var(--green);}
+
+  .pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:24px 0 4px;flex-wrap:wrap;}
+  .pagination button{
+    background:var(--bg-panel);border:1px solid var(--line);color:var(--cream-dim);
+    padding:8px 13px;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;
+    cursor:pointer;min-width:38px;
+  }
+  .pagination button:hover:not(:disabled){border-color:var(--gold);color:var(--gold);}
+  .pagination button.active{background:var(--gold);color:var(--bg-void);border-color:var(--gold);font-weight:600;}
+  .pagination button:disabled{opacity:.35;cursor:default;}
+  .pagination .gap{color:var(--cream-dim);padding:0 4px;font-family:'IBM Plex Mono',monospace;font-size:13px;}
 
   footer{max-width:980px;margin:40px auto 0;padding:0 24px;color:var(--cream-dim);font-size:12.5px;line-height:1.7;border-top:1px solid var(--line);padding-top:24px;}
   footer a{color:var(--gold);}
@@ -156,28 +162,35 @@
     <tbody id="rows"></tbody>
   </table>
 
+  <div class="pagination" id="pagination"></div>
+
   <div class="support">
     <div>
       <h2>Keep this running</h2>
       <p>This tracker is free for the Kenyan chess community. If it's useful to you, a small contribution helps cover hosting and keeps it updated.</p>
     </div>
     <div class="support-actions">
-
-      <div class="mpesa-box">M-Pesa: <b> — 0792132524</b></div>
+      <div class="mpesa-box">M-Pesa: <b>0792 132 524</b></div>
     </div>
   </div>
 </div>
 
 <footer class="wrap" style="padding-left:0;padding-right:0;">
   Data via the official public <a href="https://www.chess.com/news/view/published-data-api" target="_blank">Chess.com API</a>, fetched once daily by an automated job. Built for the Kenyan chess community.
+  <p style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:var(--cream);margin:16px 0 0;">
+    🖤❤️ Created with love by <span style="color:var(--gold);">S1mon</span> 💚
+  </p>
 </footer>
 
 <script>
 let players = [];
 let sortKey = "rapid";
+let currentPage = 1;
+const PAGE_SIZE = 25;
 
 const statusEl = document.getElementById('status');
 const rowsEl = document.getElementById('rows');
+const paginationEl = document.getElementById('pagination');
 const countFoundEl = document.getElementById('countFound');
 const lastUpdatedEl = document.getElementById('lastUpdated');
 const searchEl = document.getElementById('search');
@@ -206,12 +219,18 @@ function render(){
     return bv - av;
   });
 
-  rowsEl.innerHTML = list.map((p, i) => {
-    const rankClass = i===0 ? "top1" : i===1 ? "top2" : i===2 ? "top3" : "";
+  const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  if(currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageList = list.slice(start, start + PAGE_SIZE);
+
+  rowsEl.innerHTML = pageList.map((p, i) => {
+    const rank = start + i;
+    const rankClass = rank===0 ? "top1" : rank===1 ? "top2" : rank===2 ? "top3" : "";
     const avatar = p.avatar || 'https://www.chess.com/bundles/web/images/user-image.007dad08.svg';
     const titleTag = p.title ? `<span class="title-tag">${p.title}</span>` : '';
     return `<tr>
-      <td class="rank ${rankClass}">${i+1}</td>
+      <td class="rank ${rankClass}">${rank+1}</td>
       <td><div class="player">
             <img src="${avatar}" alt="" loading="lazy">
             <span>${titleTag}<a href="${p.url}" target="_blank">${p.username}</a></span>
@@ -222,14 +241,46 @@ function render(){
       ${ratingCell(p.ratings.daily, 'Daily')}
     </tr>`;
   }).join('');
+
+  renderPagination(totalPages, list.length);
 }
 
-searchEl.addEventListener('input', render);
-sortSel.addEventListener('change', () => { sortKey = sortSel.value; render(); });
+function renderPagination(totalPages, totalItems){
+  if(totalItems === 0){ paginationEl.innerHTML = ''; return; }
+
+  const btn = (label, page, opts = {}) =>
+    `<button ${opts.disabled ? 'disabled' : ''} ${opts.active ? 'class="active"' : ''} data-page="${page}">${label}</button>`;
+
+  let html = '';
+  html += btn('‹ Prev', currentPage - 1, { disabled: currentPage === 1 });
+
+  const pages = new Set([1, totalPages, currentPage, currentPage - 1, currentPage + 1]);
+  let prev = 0;
+  for(const p of [...pages].filter(p => p >= 1 && p <= totalPages).sort((a,b) => a-b)){
+    if(prev && p - prev > 1) html += `<span class="gap">…</span>`;
+    html += btn(p, p, { active: p === currentPage });
+    prev = p;
+  }
+
+  html += btn('Next ›', currentPage + 1, { disabled: currentPage === totalPages });
+  paginationEl.innerHTML = html;
+
+  paginationEl.querySelectorAll('button[data-page]').forEach(b => {
+    b.addEventListener('click', () => {
+      currentPage = parseInt(b.dataset.page, 10);
+      render();
+      window.scrollTo({ top: document.querySelector('.controls').offsetTop - 20, behavior: 'smooth' });
+    });
+  });
+}
+
+searchEl.addEventListener('input', () => { currentPage = 1; render(); });
+sortSel.addEventListener('change', () => { sortKey = sortSel.value; currentPage = 1; render(); });
 document.querySelectorAll('thead th[data-key]').forEach(th => {
   th.addEventListener('click', () => {
     sortKey = th.dataset.key;
     sortSel.value = sortKey;
+    currentPage = 1;
     document.querySelectorAll('thead th').forEach(t => t.classList.remove('active'));
     th.classList.add('active');
     render();
