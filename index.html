@@ -5,35 +5,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KE64 — Kenyan Chess.com Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg-void:#12100d;
-    --bg-panel:#1c1813;
-    --bg-panel-alt:#221c15;
-    --cream:#ede6d6;
-    --cream-dim:#a89f8d;
-    --red:#b23a34;
-    --green:#4c7a5e;
-    --gold:#c89b4a;
-    --line:#332c22;
+    --bg-void:#06070b;
+    --bg-panel:#111827;
+    --bg-panel-alt:#172033;
+    --bg-panel-soft:#1d283a;
+    --cream:#f4efe7;
+    --cream-dim:#9aa6b6;
+    --red:#d15b45;
+    --green:#5c8d6b;
+    --gold:#d7a94a;
+    --line:#2a3443;
+    --shadow:0 18px 48px rgba(0,0,0,.28);
   }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg-void);color:var(--cream);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at top left, rgba(215,169,74,.16), transparent 24%),
+      radial-gradient(circle at bottom right, rgba(92,141,107,.14), transparent 28%),
+      linear-gradient(135deg, var(--bg-void) 0%, #0c1118 50%, #06070b 100%);
+    color:var(--cream);
+    font-family:'Inter','Segoe UI',sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
   .wrap{max-width:980px;margin:0 auto;padding:0 24px 80px;}
 
-  header.hero{padding:72px 24px 48px;text-align:left;border-bottom:1px solid var(--line);position:relative;overflow:hidden;}
+  header.hero{
+    padding:72px 24px 48px;text-align:left;border-bottom:1px solid var(--line);position:relative;overflow:hidden;
+    background:linear-gradient(135deg, rgba(17,24,39,.98) 0%, rgba(9,14,22,.96) 100%);
+    box-shadow:inset 0 -1px 0 rgba(255,255,255,.04);
+  }
   header.hero::before{
-    content:"";position:absolute;top:-40px;right:-60px;width:280px;height:280px;
+    content:"";position:absolute;top:-40px;right:-60px;width:320px;height:320px;
     background:
-      linear-gradient(135deg, var(--red) 0 25%, transparent 0 50%, var(--red) 0 75%, transparent 0) ,
-      linear-gradient(-135deg, var(--green) 0 25%, transparent 0 50%, var(--green) 0 75%, transparent 0);
-    background-size:70px 70px;opacity:.05;transform:rotate(8deg);pointer-events:none;
+      linear-gradient(45deg, rgba(215,169,74,.16) 25%, transparent 25%, transparent 75%, rgba(92,141,107,.16) 75%),
+      linear-gradient(-45deg, rgba(215,169,74,.18) 25%, transparent 25%, transparent 75%, rgba(209,91,69,.16) 75%);
+    background-size:42px 42px;opacity:.95;transform:rotate(8deg);pointer-events:none;border-radius:50%;
   }
   .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 18px;}
-  h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:0 0 20px;max-width:760px;}
-  h1 em{font-style:italic;font-weight:400;color:var(--cream-dim);}
-  .sub{max-width:560px;color:var(--cream-dim);font-size:16px;line-height:1.6;margin:0 0 32px;}
+  h1{font-family:'Cinzel',Georgia,serif;font-weight:700;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:0 0 20px;max-width:760px;letter-spacing:.02em;}
+  h1 em{font-style:italic;font-weight:500;color:var(--cream-dim);}
+  .sub{max-width:600px;color:var(--cream-dim);font-size:16px;line-height:1.7;margin:0 0 32px;font-family:'Inter','Segoe UI',sans-serif;}
   .counter-row{display:flex;gap:36px;flex-wrap:wrap;align-items:baseline;}
   .counter{font-family:'IBM Plex Mono',monospace;}
   .counter .n{font-size:34px;font-weight:600;color:var(--cream);display:block;font-variant-numeric:tabular-nums;}
@@ -41,34 +58,35 @@
 
   .controls{max-width:980px;margin:0 auto;padding:28px 24px 0;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
   input[type=text]{
-    background:var(--bg-panel);border:1px solid var(--line);color:var(--cream);
-    padding:10px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;flex:1;min-width:180px;
+    background:rgba(17,24,39,.95);border:1px solid var(--line);color:var(--cream);
+    padding:10px 14px;border-radius:8px;font-family:'Inter','Segoe UI',sans-serif;font-size:14px;flex:1;min-width:180px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
   }
-  input[type=text]:focus{outline:none;border-color:var(--gold);}
+  input[type=text]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(215,169,74,.16);}
   select{
-    background:var(--bg-panel);border:1px solid var(--line);color:var(--cream);
-    padding:10px 14px;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:13px;
+    background:rgba(17,24,39,.95);border:1px solid var(--line);color:var(--cream);
+    padding:10px 14px;border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:13px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
   }
   button{
-    background:var(--red);color:var(--cream);border:none;padding:10px 18px;border-radius:6px;
-    font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer;transition:opacity .15s;
+    background:linear-gradient(135deg, var(--red), #bc4f3b);color:var(--cream);border:none;padding:10px 18px;border-radius:8px;
+    font-family:'Inter','Segoe UI',sans-serif;font-weight:600;font-size:14px;cursor:pointer;transition:transform .15s,opacity .15s,box-shadow .15s;
+    box-shadow:0 8px 20px rgba(209,91,69,.2);
   }
-  button:hover{opacity:.85;}
+  button:hover{opacity:.92;transform:translateY(-1px);}
 
   .status{max-width:980px;margin:16px auto 0;padding:0 24px;color:var(--cream-dim);font-family:'IBM Plex Mono',monospace;font-size:12.5px;min-height:18px;}
   .status.error{color:var(--red);}
 
-  table{width:100%;border-collapse:collapse;margin-top:20px;}
+  table{width:100%;border-collapse:collapse;margin-top:20px;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);background:rgba(255,255,255,.02);}
   thead th{
     text-align:left;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;
     letter-spacing:.08em;color:var(--cream-dim);padding:10px 12px;border-bottom:1px solid var(--line);
-    cursor:pointer;user-select:none;white-space:nowrap;
+    cursor:pointer;user-select:none;white-space:nowrap;background:rgba(17,24,39,.9);
   }
   thead th:hover{color:var(--gold);}
   thead th.active{color:var(--gold);}
-  tbody tr{border-bottom:1px solid var(--line);transition:background .1s;}
-  tbody tr:nth-child(odd){background:var(--bg-panel-alt);}
-  tbody tr:hover{background:var(--bg-panel);}
+  tbody tr{border-bottom:1px solid var(--line);transition:background .12s;}
+  tbody tr:nth-child(odd){background:rgba(23,32,51,.7);}
+  tbody tr:hover{background:rgba(29,40,58,.95);}
   td{padding:12px;font-size:14px;vertical-align:middle;}
   .rank{font-family:'IBM Plex Mono',monospace;color:var(--cream-dim);width:34px;}
   .rank.top1{color:var(--gold);font-weight:600;}
@@ -84,14 +102,14 @@
   .rating.dim{color:var(--cream-dim);}
   .empty-cell{color:var(--line);}
 
-  .support{max-width:980px;margin:56px auto 0;padding:28px 24px;border:1px solid var(--line);border-radius:10px;
-    background:var(--bg-panel-alt);display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center;}
-  .support h2{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin:0 0 6px;}
-  .support p{color:var(--cream-dim);font-size:14px;margin:0;max-width:420px;line-height:1.5;}
+  .support{max-width:980px;margin:56px auto 0;padding:28px 24px;border:1px solid var(--line);border-radius:12px;
+    background:linear-gradient(135deg, rgba(17,24,39,.95), rgba(11,16,24,.95));display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center;box-shadow:var(--shadow);}
+  .support h2{font-family:'Cinzel',Georgia,serif;font-size:22px;font-weight:600;margin:0 0 6px;}
+  .support p{color:var(--cream-dim);font-size:14px;margin:0;max-width:420px;line-height:1.6;}
   .support-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
   .mpesa-box{
-    font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--bg-void);
-    border:1px solid var(--line);border-radius:6px;padding:10px 14px;color:var(--cream);
+    font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(6,7,11,.95);
+    border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--cream);box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
   }
   .mpesa-box b{color:var(--green);}
 
@@ -125,8 +143,8 @@
 <header class="hero">
   <div class="wrap" style="padding:0;">
     <p class="eyebrow">Refreshed daily from api.chess.com</p>
-    <h1>Kenya, <em>ranked.</em></h1>
-    <p class="sub">Every player who's set their Chess.com flag to Kenya, ranked by rating. Data is pre-fetched once a day, so this loads instantly — no waiting on the API in your browser.</p>
+    <h1>Kenya's, <em>chess.com Leaderboard</em></h1>
+    <p class="sub">Discover the highest-rated Kenyan players on Chess.com across Blitz, Rapid, Bullet, and Daily. ranked by rating.</p>
     <div class="counter-row">
       <div class="counter"><span class="n" id="countFound">–</span><span class="l">players tracked</span></div>
       <div class="counter"><span class="n" id="lastUpdated">–</span><span class="l">last updated</span></div>
@@ -166,19 +184,19 @@
 
   <div class="support">
     <div>
-      <h2>Keep this running</h2>
-      <p>This tracker is free for the Kenyan chess community. If it's useful to you, a small contribution helps cover hosting and keeps it updated.</p>
+      <h2>Find this website useful?</h2>
+      <p>If you find this website usefull you can support me via M-Pesa.</p>
     </div>
     <div class="support-actions">
-      <div class="mpesa-box">M-Pesa: <b>0792 132 524</b></div>
+      <div class="mpesa-box">M-Pesa: <b>0792-132-524</b></div>
     </div>
   </div>
 </div>
 
 <footer class="wrap" style="padding-left:0;padding-right:0;">
   Data via the official public <a href="https://www.chess.com/news/view/published-data-api" target="_blank">Chess.com API</a>, fetched once daily by an automated job. Built for the Kenyan chess community.
-  <p style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:var(--cream);margin:16px 0 0;">
-    🖤❤️ Created with love by <span style="color:var(--gold);">S1mon</span> 💚
+  <p style="font-family:'Cinzel',Georgia,serif;font-size:22px;font-weight:600;color:var(--cream);margin:16px 0 0;">
+    🖤❤️ Hey thanks for stoping by <span style="color:var(--gold);">S1MON</span> 💚
   </p>
 </footer>
 
