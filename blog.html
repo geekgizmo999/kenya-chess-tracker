@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KE64 Blog — Kenyan Chess Updates & News</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  :root{
+    --bg-void:#06070b;
+    --bg-panel:#111827;
+    --bg-panel-alt:#172033;
+    --bg-panel-soft:#1d283a;
+    --cream:#f4efe7;
+    --cream-dim:#9aa6b6;
+    --red:#d15b45;
+    --green:#5c8d6b;
+    --gold:#d7a94a;
+    --line:#2a3443;
+    --shadow:0 18px 48px rgba(0,0,0,.28);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;min-height:100vh;
+    background:
+      radial-gradient(circle at top left, rgba(215,169,74,.16), transparent 24%),
+      radial-gradient(circle at bottom right, rgba(92,141,107,.14), transparent 28%),
+      linear-gradient(135deg, var(--bg-void) 0%, #0c1118 50%, #06070b 100%);
+    color:var(--cream);font-family:'Inter','Segoe UI',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px 80px;}
+
+  header.hero{
+    padding:56px 24px 40px;border-bottom:1px solid var(--line);position:relative;overflow:hidden;
+    background:linear-gradient(135deg, rgba(17,24,39,.98) 0%, rgba(9,14,22,.96) 100%);
+  }
+  .eyebrow-row{display:flex;justify-content:space-between;align-items:center;max-width:760px;margin:0 auto 18px;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0;}
+  .home-link{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--cream-dim);text-decoration:none;letter-spacing:.06em;}
+  .home-link:hover{color:var(--gold);}
+  h1{font-family:'Cinzel',Georgia,serif;font-weight:700;font-size:clamp(32px,6vw,52px);line-height:1.05;margin:0 0 14px;max-width:640px;letter-spacing:.02em;}
+  .sub{max-width:520px;color:var(--cream-dim);font-size:15px;line-height:1.7;margin:0;}
+
+  .posts{padding:36px 24px 0;}
+  .post-card{
+    background:rgba(17,24,39,.7);border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:16px;
+    cursor:pointer;transition:border-color .15s,transform .15s;box-shadow:var(--shadow);
+  }
+  .post-card:hover{border-color:var(--gold);transform:translateY(-1px);}
+  .post-date{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;}
+  .post-title{font-family:'Cinzel',Georgia,serif;font-size:22px;font-weight:600;margin:8px 0 8px;color:var(--cream);}
+  .post-excerpt{color:var(--cream-dim);font-size:14.5px;line-height:1.6;margin:0;}
+  .tags{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:10px;background:rgba(215,169,74,.12);color:var(--gold);
+    padding:3px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:.05em;}
+
+  .post-detail{padding:36px 24px 0;}
+  .back-link{background:none;border:none;color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:12.5px;
+    cursor:pointer;padding:0;margin-bottom:20px;display:inline-block;text-decoration:none;}
+  .post-detail article{background:rgba(17,24,39,.6);border:1px solid var(--line);border-radius:14px;padding:32px;box-shadow:var(--shadow);}
+  .post-detail .post-title{font-size:clamp(26px,5vw,36px);margin-top:6px;}
+  .post-body{margin-top:22px;font-size:15.5px;line-height:1.8;color:var(--cream);}
+  .post-body h2, .post-body h3{font-family:'Cinzel',Georgia,serif;color:var(--cream);margin-top:28px;}
+  .post-body p{margin:14px 0;}
+  .post-body a{color:var(--gold);}
+  .post-body ul, .post-body ol{padding-left:22px;}
+  .post-body li{margin:6px 0;}
+  .post-body blockquote{
+    border-left:3px solid var(--gold);margin:18px 0;padding:4px 0 4px 16px;color:var(--cream-dim);font-style:italic;
+  }
+  .post-body code{background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+
+  .empty{color:var(--cream-dim);text-align:center;padding:60px 20px;font-size:14px;}
+
+  footer{max-width:760px;margin:48px auto 0;padding:24px 24px 0;color:var(--cream-dim);font-size:12.5px;border-top:1px solid var(--line);text-align:center;}
+  footer .credit{font-family:'Cinzel',Georgia,serif;font-size:18px;font-weight:600;color:var(--cream);margin-top:10px;}
+  footer .credit span{color:var(--gold);}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow-row">
+    <p class="eyebrow">KE64 Blog</p>
+    <a class="home-link" href="./index.html">← Back to leaderboard</a>
+  </div>
+  <div class="wrap" style="padding:0;">
+    <h1>News & <em style="font-style:italic;font-weight:500;color:var(--cream-dim);">updates.</em></h1>
+    <p class="sub">Upcoming events, results, and whatever's worth knowing in the Kenyan chess scene.</p>
+  </div>
+</header>
+
+<div class="wrap" id="content" style="padding-top:0;">
+  <div class="posts" id="postsView"></div>
+  <div class="post-detail" id="detailView" style="display:none;"></div>
+</div>
+
+<footer class="wrap" style="padding-left:0;padding-right:0;">
+  <p class="credit">🖤❤️ Written by <span>S1MON</span> 💚</p>
+</footer>
+
+<script>
+let posts = [];
+const postsViewEl = document.getElementById('postsView');
+const detailViewEl = document.getElementById('detailView');
+
+function formatDate(d){
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+}
+
+function renderList(){
+  detailViewEl.style.display = 'none';
+  postsViewEl.style.display = 'block';
+
+  if(posts.length === 0){
+    postsViewEl.innerHTML = `<p class="empty">No posts yet — add one in blog/posts.json.</p>`;
+    return;
+  }
+
+  const sorted = [...posts].sort((a,b) => new Date(b.date) - new Date(a.date));
+  postsViewEl.innerHTML = sorted.map(p => `
+    <div class="post-card" data-slug="${p.slug}">
+      <div class="post-date">${formatDate(p.date)}</div>
+      <div class="post-title">${p.title}</div>
+      <p class="post-excerpt">${p.excerpt || ''}</p>
+      ${p.tags?.length ? `<div class="tags">${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
+    </div>
+  `).join('');
+
+  postsViewEl.querySelectorAll('.post-card').forEach(card => {
+    card.addEventListener('click', () => {
+      location.hash = card.dataset.slug;
+    });
+  });
+}
+
+function renderDetail(slug){
+  const post = posts.find(p => p.slug === slug);
+  if(!post){ renderList(); return; }
+
+  postsViewEl.style.display = 'none';
+  detailViewEl.style.display = 'block';
+  detailViewEl.innerHTML = `
+    <a class="back-link" href="#" id="backLink">← All posts</a>
+    <article>
+      <div class="post-date">${formatDate(post.date)}</div>
+      <h1 class="post-title">${post.title}</h1>
+      ${post.tags?.length ? `<div class="tags">${post.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
+      <div class="post-body">${marked.parse(post.body || '')}</div>
+    </article>
+  `;
+  document.getElementById('backLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    history.pushState('', document.title, window.location.pathname + window.location.search);
+    renderList();
+  });
+}
+
+function route(){
+  const slug = location.hash.replace('#', '');
+  if(slug) renderDetail(slug);
+  else renderList();
+}
+
+window.addEventListener('hashchange', route);
+
+async function init(){
+  try{
+    const res = await fetch('./blog/posts.json', { cache: 'no-store' });
+    const data = await res.json();
+    posts = data.posts || [];
+    route();
+  }catch(e){
+    postsViewEl.innerHTML = `<p class="empty">Couldn't load posts — make sure blog/posts.json exists.</p>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>

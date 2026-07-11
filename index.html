@@ -101,6 +101,12 @@
   .rating{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;color:var(--cream);}
   .rating.dim{color:var(--cream-dim);}
   .empty-cell{color:var(--line);}
+  .record-cell{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--cream-dim);white-space:nowrap;}
+  .record-cell .w{color:var(--green);}
+  .record-cell .l{color:var(--red);}
+  .today-cell{font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:center;}
+  .today-cell.has-games{color:var(--gold);font-weight:600;}
+  .today-cell.no-games{color:var(--line);}
 
   .support{max-width:980px;margin:56px auto 0;padding:28px 24px;border:1px solid var(--line);border-radius:12px;
     background:linear-gradient(135deg, rgba(17,24,39,.95), rgba(11,16,24,.95));display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center;box-shadow:var(--shadow);}
@@ -134,6 +140,8 @@
     tbody tr{padding:14px 12px;border-bottom:1px solid var(--line);}
     td{padding:2px 0;border:none;}
     .rating::before{content:attr(data-label) ": ";color:var(--cream-dim);}
+    .record-cell::before{content:attr(data-label) ": ";color:var(--cream-dim);}
+    .today-cell::before{content:attr(data-label) ": ";color:var(--cream-dim);}
     .support{flex-direction:column;align-items:flex-start;}
   }
 </style>
@@ -142,11 +150,16 @@
 
 <header class="hero">
   <div class="wrap" style="padding:0;">
-    <p class="eyebrow">Refreshed daily from api.chess.com</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <p class="eyebrow" style="margin:0;">Refreshed daily from api.chess.com</p>
+      <a href="./blog.html" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);text-decoration:none;letter-spacing:.06em;">📰 Blog →</a>
+    </div>
     <h1>Kenya's, <em>chess.com Leaderboard</em></h1>
     <p class="sub">Discover the highest-rated Kenyan players on Chess.com across Blitz, Rapid, Bullet, and Daily. ranked by rating.</p>
     <div class="counter-row">
       <div class="counter"><span class="n" id="countFound">–</span><span class="l">players tracked</span></div>
+      <div class="counter"><span class="n" id="avgRapid">–</span><span class="l">avg rapid rating</span></div>
+      <div class="counter"><span class="n" id="gamesToday">–</span><span class="l">games played today</span></div>
       <div class="counter"><span class="n" id="lastUpdated">–</span><span class="l">last updated</span></div>
     </div>
   </div>
@@ -175,6 +188,8 @@
         <th data-key="blitz">Blitz</th>
         <th data-key="bullet">Bullet</th>
         <th data-key="daily">Daily</th>
+        <th id="recordHeader">Record</th>
+        <th>Today</th>
       </tr>
     </thead>
     <tbody id="rows"></tbody>
@@ -210,7 +225,10 @@ const statusEl = document.getElementById('status');
 const rowsEl = document.getElementById('rows');
 const paginationEl = document.getElementById('pagination');
 const countFoundEl = document.getElementById('countFound');
+const avgRapidEl = document.getElementById('avgRapid');
+const gamesTodayEl = document.getElementById('gamesToday');
 const lastUpdatedEl = document.getElementById('lastUpdated');
+const recordHeaderEl = document.getElementById('recordHeader');
 const searchEl = document.getElementById('search');
 const sortSel = document.getElementById('sortBy');
 
@@ -222,6 +240,17 @@ function setStatus(msg, isError){
 function ratingCell(val, label){
   if(val === null || val === undefined) return `<td class="rating dim empty-cell" data-label="${label}">—</td>`;
   return `<td class="rating" data-label="${label}">${val}</td>`;
+}
+
+function recordCell(records, key){
+  const r = records ? records[key] : null;
+  if(!r) return `<td class="record-cell empty-cell" data-label="Record">—</td>`;
+  return `<td class="record-cell" data-label="Record"><span class="w">${r.win}W</span>-<span class="l">${r.loss}L</span>-${r.draw}D</td>`;
+}
+
+function todayCell(count){
+  if(!count) return `<td class="today-cell no-games" data-label="Today">0</td>`;
+  return `<td class="today-cell has-games" data-label="Today">${count}</td>`;
 }
 
 function render(){
@@ -242,11 +271,14 @@ function render(){
   const start = (currentPage - 1) * PAGE_SIZE;
   const pageList = list.slice(start, start + PAGE_SIZE);
 
+  recordHeaderEl.textContent = `Record (${sortKey.charAt(0).toUpperCase() + sortKey.slice(1)})`;
+
   rowsEl.innerHTML = pageList.map((p, i) => {
     const rank = start + i;
     const rankClass = rank===0 ? "top1" : rank===1 ? "top2" : rank===2 ? "top3" : "";
     const avatar = p.avatar || 'https://www.chess.com/bundles/web/images/user-image.007dad08.svg';
     const titleTag = p.title ? `<span class="title-tag">${p.title}</span>` : '';
+    const recordKey = sortKey === "username" ? "rapid" : sortKey;
     return `<tr>
       <td class="rank ${rankClass}">${rank+1}</td>
       <td><div class="player">
@@ -257,6 +289,8 @@ function render(){
       ${ratingCell(p.ratings.blitz, 'Blitz')}
       ${ratingCell(p.ratings.bullet, 'Bullet')}
       ${ratingCell(p.ratings.daily, 'Daily')}
+      ${recordCell(p.records, recordKey)}
+      ${todayCell(p.gamesToday)}
     </tr>`;
   }).join('');
 
@@ -312,6 +346,8 @@ async function init(){
     const data = await res.json();
     players = data.players || [];
     countFoundEl.textContent = data.totalWithData ?? players.length;
+    avgRapidEl.textContent = data.communityStats?.avgRapid ?? '–';
+    gamesTodayEl.textContent = data.communityStats?.gamesToday ?? '0';
     lastUpdatedEl.textContent = data.generatedAt
       ? new Date(data.generatedAt).toLocaleDateString(undefined, { day:'numeric', month:'short' })
       : '–';
