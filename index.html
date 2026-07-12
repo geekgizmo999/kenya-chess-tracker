@@ -4,6 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KE64 — Kenyan Chess.com Tracker</title>
+<meta name="description" content="Every rated Kenyan player on Chess.com, ranked by Rapid, Blitz, Bullet & Daily. Updated automatically every day.">
+<link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="KE64 — Kenya's Chess.com Leaderboard">
+<meta property="og:description" content="Every rated Kenyan player on Chess.com, ranked by Rapid, Blitz, Bullet & Daily. Updated automatically every day.">
+<meta property="og:image" content="https://kenya-chess-tracker.netlify.app/assets/og-banner.png">
+<meta property="og:url" content="https://kenya-chess-tracker.netlify.app/">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="KE64 — Kenya's Chess.com Leaderboard">
+<meta name="twitter:description" content="Every rated Kenyan player on Chess.com, ranked by Rapid, Blitz, Bullet & Daily.">
+<meta name="twitter:image" content="https://kenya-chess-tracker.netlify.app/assets/og-banner.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -96,6 +109,24 @@
   .player img{width:32px;height:32px;border-radius:5px;object-fit:cover;background:var(--line);}
   .player a{color:var(--cream);text-decoration:none;font-weight:500;}
   .player a:hover{color:var(--gold);}
+  .share-btn{
+    background:none;border:1px solid var(--line);color:var(--cream-dim);border-radius:6px;
+    width:26px;height:26px;font-size:13px;cursor:pointer;flex-shrink:0;display:inline-flex;
+    align-items:center;justify-content:center;transition:border-color .15s,color .15s;
+  }
+  .share-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(6,7,11,.85);backdrop-filter:blur(4px);
+    display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;
+  }
+  .modal-box{background:var(--bg-panel);border:1px solid var(--line);border-radius:16px;padding:24px;
+    max-width:420px;width:100%;box-shadow:var(--shadow);text-align:center;}
+  .modal-box canvas{width:100%;height:auto;border-radius:12px;margin-bottom:18px;display:block;}
+  .modal-actions{display:flex;gap:10px;}
+  .modal-actions button{flex:1;}
+  .modal-close{background:none;border:1px solid var(--line);color:var(--cream-dim);width:100%;margin-top:10px;padding:9px;}
+  .modal-close:hover{opacity:1;border-color:var(--red);color:var(--red);}
   .title-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--bg-void);background:var(--gold);
     padding:1px 5px;border-radius:3px;margin-right:6px;font-weight:600;}
   .rating{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;color:var(--cream);}
@@ -197,6 +228,8 @@
 
   <div class="pagination" id="pagination"></div>
 
+  <div id="shareModalRoot"></div>
+
   <div class="support">
     <div>
       <h2>Find this website useful?</h2>
@@ -249,6 +282,7 @@ function recordCell(records, key){
 }
 
 function todayCell(count){
+  if(count === null || count === undefined) return `<td class="today-cell empty-cell" data-label="Today">—</td>`;
   if(!count) return `<td class="today-cell no-games" data-label="Today">0</td>`;
   return `<td class="today-cell has-games" data-label="Today">${count}</td>`;
 }
@@ -284,6 +318,7 @@ function render(){
       <td><div class="player">
             <img src="${avatar}" alt="" loading="lazy">
             <span>${titleTag}<a href="${p.url}" target="_blank">${p.username}</a></span>
+            <button class="share-btn" data-rank="${rank+1}" data-username="${p.username}" title="Share this rank">📤</button>
           </div></td>
       ${ratingCell(p.ratings.rapid, 'Rapid')}
       ${ratingCell(p.ratings.blitz, 'Blitz')}
@@ -337,6 +372,170 @@ document.querySelectorAll('thead th[data-key]').forEach(th => {
     th.classList.add('active');
     render();
   });
+});
+
+// ---- Shareable rank card ----
+
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
+function drawShareCard(canvas, { rank, username, rating, format }) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2;
+
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#0c1118');
+  grad.addColorStop(1, '#06070b');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = '#2a3443';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(6, 6, W - 12, H - 12);
+
+  ctx.textAlign = 'center';
+
+  ctx.fillStyle = '#d7a94a';
+  ctx.font = 'bold 20px Georgia, serif';
+  ctx.fillText('K E 6 4', cx, 56);
+
+  const topY = 130, cw = 120, ch = 54;
+  ctx.fillStyle = '#d7a94a';
+  ctx.beginPath();
+  ctx.moveTo(cx - cw/2, topY + ch);
+  ctx.lineTo(cx - cw/2 + 20, topY);
+  ctx.lineTo(cx - cw/2 + 40, topY + 30);
+  ctx.lineTo(cx, topY - 20);
+  ctx.lineTo(cx + cw/2 - 40, topY + 30);
+  ctx.lineTo(cx + cw/2 - 20, topY);
+  ctx.lineTo(cx + cw/2, topY + ch);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillRect(cx - cw/2, topY + ch, cw, 12);
+  ctx.fillStyle = '#d15b45';
+  [[-cw/2+20, topY], [0, topY-20], [cw/2-20, topY]].forEach(([dx, dy]) => {
+    ctx.beginPath(); ctx.arc(cx + dx, dy, 8, 0, Math.PI*2); ctx.fill();
+  });
+
+  ctx.fillStyle = '#d7a94a';
+  ctx.font = 'bold 24px Georgia, serif';
+  ctx.fillText('R A N K E D', cx, topY + 130);
+
+  ctx.fillStyle = '#f4efe7';
+  ctx.font = 'bold 150px Georgia, serif';
+  ctx.fillText('#' + rank, cx, topY + 300);
+
+  ctx.font = 'bold 24px Georgia, serif';
+  ctx.fillStyle = '#9aa6b6';
+  ctx.fillText('IN KENYA ON CHESS.COM', cx, topY + 340);
+
+  ctx.strokeStyle = '#2a3443';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx - 100, topY + 380);
+  ctx.lineTo(cx + 100, topY + 380);
+  ctx.stroke();
+
+  ctx.fillStyle = '#f4efe7';
+  ctx.font = 'bold 42px Georgia, serif';
+  ctx.fillText(username, cx, topY + 440);
+
+  const pillText = `${format.toUpperCase()}  ${rating}`;
+  ctx.font = 'bold 24px monospace';
+  const pillW = ctx.measureText(pillText).width + 50;
+  const pillH = 46, pillY = topY + 470;
+  ctx.fillStyle = 'rgba(92,141,107,0.15)';
+  ctx.strokeStyle = '#5c8d6b';
+  ctx.lineWidth = 1.5;
+  roundRect(ctx, cx - pillW/2, pillY, pillW, pillH, 23);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#7fb894';
+  ctx.fillText(pillText, cx, pillY + 31);
+
+  const stripW = 320, sq = stripW / 8, stripY2 = pillY + 90, stripX = cx - stripW/2;
+  for(let i = 0; i < 8; i++){
+    ctx.fillStyle = i % 2 === 0 ? '#1d283a' : '#2a3443';
+    ctx.fillRect(stripX + i*sq, stripY2, sq, sq);
+  }
+
+  ctx.fillStyle = '#9aa6b6';
+  ctx.font = '18px monospace';
+  ctx.fillText('kenya-chess-tracker.netlify.app', cx, H - 56);
+
+  const stripeY = H - 26, stripeH = 20, segW = W / 3;
+  ctx.fillStyle = '#111111'; ctx.fillRect(0, stripeY, segW, stripeH);
+  ctx.fillStyle = '#d15b45'; ctx.fillRect(segW, stripeY, segW, stripeH);
+  ctx.fillStyle = '#3a7a4d'; ctx.fillRect(segW * 2, stripeY, segW, stripeH);
+  ctx.fillStyle = '#f4efe7';
+  ctx.fillRect(0, stripeY - 2, W, 2);
+  ctx.fillRect(0, stripeY + stripeH, W, 2);
+}
+
+function openShareModal(username, rank){
+  const player = players.find(p => p.username === username);
+  if(!player) return;
+  const format = sortKey === 'username' ? 'rapid' : sortKey;
+  const rating = player.ratings[format];
+  if(rating === null){ alert(`${username} doesn't have a ${format} rating to share.`); return; }
+
+  const root = document.getElementById('shareModalRoot');
+  root.innerHTML = `
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal-box">
+        <canvas id="shareCanvas" width="800" height="1000"></canvas>
+        <div class="modal-actions">
+          <button id="downloadBtn">⬇ Download</button>
+          <button id="shareBtn" class="ghost" style="background:var(--bg-panel-alt);border:1px solid var(--line);">📤 Share</button>
+        </div>
+        <button class="modal-close" id="closeBtn">Close</button>
+      </div>
+    </div>
+  `;
+
+  const canvas = document.getElementById('shareCanvas');
+  drawShareCard(canvas, { rank, username, rating, format });
+
+  document.getElementById('closeBtn').addEventListener('click', () => root.innerHTML = '');
+  document.getElementById('modalOverlay').addEventListener('click', (e) => {
+    if(e.target.id === 'modalOverlay') root.innerHTML = '';
+  });
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = `${username}-ke64-rank.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  document.getElementById('shareBtn').addEventListener('click', () => {
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], `${username}-ke64-rank.png`, { type: 'image/png' });
+      const shareText = `I'm ranked #${rank} in Kenya on Chess.com (${format} ${rating}) 🇰🇪♟️`;
+      if(navigator.canShare && navigator.canShare({ files: [file] })){
+        try {
+          await navigator.share({ files: [file], text: shareText, url: 'https://kenya-chess-tracker.netlify.app/' });
+        } catch(e) { /* user cancelled — fine */ }
+      } else {
+        const link = document.createElement('a');
+        link.download = `${username}-ke64-rank.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        alert('Sharing isn\'t supported on this browser — the image downloaded instead. You can attach it manually.');
+      }
+    }, 'image/png');
+  });
+}
+
+rowsEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('.share-btn');
+  if(!btn) return;
+  openShareModal(btn.dataset.username, parseInt(btn.dataset.rank, 10));
 });
 
 async function init(){
