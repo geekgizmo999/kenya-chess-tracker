@@ -7,6 +7,17 @@
 import { writeFile } from "node:fs/promises";
 
 const COUNTRY_CODE = "KE";
+
+// Chess.com's country directory (fetched below) can lag for weeks after someone
+// sets their flag to Kenya — sometimes it just never catches up. Add usernames
+// here (lowercase) for real Kenyan players who should show up regardless of
+// whether Chess.com's own list has noticed them yet. Duplicates with the
+// official list are handled automatically, so it's safe to add someone here
+// even if they later do show up in the country list too.
+const MANUAL_ADDITIONS = [
+  "simonwangombe",
+  // "Elishahezekiah",
+];
 const CONCURRENCY = 8;        // how many players are processed at once
 const DELAY_MS = 120;         // pause between requests per worker, stay polite to the API
 const MAX_RETRIES = 2;        // retry transient failures before giving up on a player
@@ -72,7 +83,14 @@ async function fetchPlayerRecord(username) {
     fetchWithRetry(`https://api.chess.com/pub/player/${username}/stats`),
   ]);
 
-  const gamesToday = await fetchGamesToday(username);
+  // If this one extra call fails (rate limit, hiccup, whatever), don't let it
+  // take the whole player down — they still have real ratings worth keeping.
+  let gamesToday = null;
+  try {
+    gamesToday = await fetchGamesToday(username);
+  } catch (e) {
+    gamesToday = null; // shows as "—" on the site instead of silently vanishing the player
+  }
 
   return {
     username: profile.username || username,
@@ -127,10 +145,15 @@ function average(nums) {
 
 async function main() {
   console.log(`Fetching Kenya roster…`);
-  const { players: usernames } = await fetchWithRetry(
+  const { players: officialUsernames } = await fetchWithRetry(
     `https://api.chess.com/pub/country/${COUNTRY_CODE}/players`
   );
-  console.log(`Found ${usernames.length} accounts flagged Kenya. Fetching stats…`);
+
+  const officialSet = new Set(officialUsernames.map(u => u.toLowerCase()));
+  const extras = MANUAL_ADDITIONS.filter(u => !officialSet.has(u.toLowerCase()));
+  const usernames = [...officialUsernames, ...extras];
+
+  console.log(`Found ${officialUsernames.length} accounts flagged Kenya, plus ${extras.length} manual addition(s). Fetching stats…`);
 
   const { results: rawPlayers, failures } = await mapLimit(usernames, CONCURRENCY, fetchPlayerRecord);
   if (failures.length) {
