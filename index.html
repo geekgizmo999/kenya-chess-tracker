@@ -70,17 +70,28 @@
   .counter .l{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--cream-dim);}
 
   .controls{max-width:980px;margin:0 auto;padding:28px 24px 0;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  .search-wrap{flex:1;min-width:200px;position:relative;display:flex;align-items:center;}
+  .search-wrap svg{position:absolute;left:14px;width:16px;height:16px;color:var(--cream-dim);pointer-events:none;}
   input[type=text]{
-    background:rgba(17,24,39,.95);border:1px solid var(--line);color:var(--cream);
-    padding:10px 14px;border-radius:8px;font-family:'Inter','Segoe UI',sans-serif;font-size:14px;flex:1;min-width:180px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+    background:rgba(17,24,39,.95);border:1px solid var(--line);color:var(--cream);width:100%;
+    padding:11px 14px 11px 40px;border-radius:11px;font-family:'Inter','Segoe UI',sans-serif;font-size:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);transition:border-color .15s,box-shadow .15s;
   }
-  input[type=text]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(215,169,74,.16);}
+  input[type=text]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(215,169,74,.14);}
   select{
     background:rgba(17,24,39,.95);border:1px solid var(--line);color:var(--cream);
-    padding:10px 14px;border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:13px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+    padding:11px 14px;border-radius:11px;font-family:'IBM Plex Mono',monospace;font-size:13px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);cursor:pointer;
   }
+  select:focus{outline:none;border-color:var(--gold);}
+  .toggle{
+    display:inline-flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--cream-dim);
+    cursor:pointer;user-select:none;background:rgba(17,24,39,.95);border:1px solid var(--line);padding:10px 15px;border-radius:11px;
+    transition:border-color .15s,color .15s,background .15s;white-space:nowrap;
+  }
+  .toggle:hover{border-color:var(--gold);color:var(--cream);}
+  .toggle.on{border-color:var(--gold);color:var(--gold);background:rgba(215,169,74,.09);}
+  .toggle input{display:none;}
   button{
-    background:linear-gradient(135deg, var(--red), #bc4f3b);color:var(--cream);border:none;padding:10px 18px;border-radius:8px;
+    background:linear-gradient(135deg, var(--red), #bc4f3b);color:var(--cream);border:none;padding:10px 18px;border-radius:10px;
     font-family:'Inter','Segoe UI',sans-serif;font-weight:600;font-size:14px;cursor:pointer;transition:transform .15s,opacity .15s,box-shadow .15s;
     box-shadow:0 8px 20px rgba(209,91,69,.2);
   }
@@ -89,22 +100,25 @@
   .status{max-width:980px;margin:16px auto 0;padding:0 24px;color:var(--cream-dim);font-family:'IBM Plex Mono',monospace;font-size:12.5px;min-height:18px;}
   .status.error{color:var(--red);}
 
-  table{width:100%;border-collapse:collapse;margin-top:20px;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);background:rgba(255,255,255,.02);}
+  table{width:100%;border-collapse:collapse;margin-top:20px;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);background:rgba(255,255,255,.02);}
   thead th{
     text-align:left;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;
-    letter-spacing:.08em;color:var(--cream-dim);padding:10px 12px;border-bottom:1px solid var(--line);
-    cursor:pointer;user-select:none;white-space:nowrap;background:rgba(17,24,39,.9);
+    letter-spacing:.08em;color:var(--cream-dim);padding:12px 12px;border-bottom:1px solid var(--line);
+    cursor:pointer;user-select:none;white-space:nowrap;background:#0f1622;position:sticky;top:0;z-index:3;
   }
+  thead th[data-key]::after{content:"";display:inline-block;margin-left:5px;opacity:0;transition:opacity .15s;border-left:3px solid transparent;border-right:3px solid transparent;border-top:4px solid currentColor;transform:translateY(-1px);}
+  thead th.active[data-key]::after{opacity:1;}
   thead th:hover{color:var(--gold);}
   thead th.active{color:var(--gold);}
   tbody tr{border-bottom:1px solid var(--line);transition:background .12s;}
-  tbody tr:nth-child(odd){background:rgba(23,32,51,.7);}
-  tbody tr:hover{background:rgba(29,40,58,.95);}
-  td{padding:12px;font-size:14px;vertical-align:middle;}
-  .rank{font-family:'IBM Plex Mono',monospace;color:var(--cream-dim);width:34px;}
-  .rank.top1{color:var(--gold);font-weight:600;}
-  .rank.top2{color:#c9c2b2;font-weight:600;}
-  .rank.top3{color:#b98a55;font-weight:600;}
+  tbody tr:nth-child(odd){background:rgba(23,32,51,.55);}
+  tbody tr:hover{background:rgba(215,169,74,.07);}
+  td{padding:11px 12px;font-size:14px;vertical-align:middle;}
+  .rank{font-family:'IBM Plex Mono',monospace;color:var(--cream-dim);width:48px;font-variant-numeric:tabular-nums;font-weight:600;}
+  .rank .medal{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;border-radius:50%;font-size:12px;font-weight:700;color:#1a1205;}
+  .rank.top1 .medal{background:linear-gradient(135deg,#f4d572,#d7a94a);box-shadow:0 2px 10px rgba(215,169,74,.4);}
+  .rank.top2 .medal{background:linear-gradient(135deg,#e8e2d4,#b6afa0);}
+  .rank.top3 .medal{background:linear-gradient(135deg,#d4a06a,#a9713f);}
   .player{display:flex;align-items:center;gap:10px;}
   .player img{width:32px;height:32px;border-radius:5px;object-fit:cover;background:var(--line);}
   .player a{color:var(--cream);text-decoration:none;font-weight:500;}
@@ -138,17 +152,18 @@
   .modal-actions button{flex:1;}
   .modal-close{background:none;border:1px solid var(--line);color:var(--cream-dim);width:100%;margin-top:10px;padding:9px;}
   .modal-close:hover{opacity:1;border-color:var(--red);color:var(--red);}
-  .title-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--bg-void);background:var(--gold);
-    padding:1px 5px;border-radius:3px;margin-right:6px;font-weight:600;}
+  .title-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#1a1205;background:linear-gradient(135deg,#f4d572,var(--gold));
+    padding:2px 6px;border-radius:4px;margin-right:7px;font-weight:700;letter-spacing:.03em;vertical-align:middle;}
   .rating{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;color:var(--cream);}
   .rating.dim{color:var(--cream-dim);}
   .empty-cell{color:var(--line);}
   .record-cell{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--cream-dim);white-space:nowrap;}
   .record-cell .w{color:var(--green);}
   .record-cell .l{color:var(--red);}
-  .today-cell{font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:center;}
-  .today-cell.has-games{color:var(--gold);font-weight:600;}
-  .today-cell.no-games{color:var(--line);}
+  .wr-cell{font-family:'IBM Plex Mono',monospace;font-size:12.5px;white-space:nowrap;min-width:76px;}
+  .wr-cell .pct{color:var(--cream);font-variant-numeric:tabular-nums;font-weight:600;}
+  .wr-bar{height:5px;width:58px;border-radius:3px;background:var(--line);margin-top:5px;overflow:hidden;}
+  .wr-bar > span{display:block;height:100%;background:linear-gradient(90deg,var(--green),#7fb894);border-radius:3px;}
 
   .support{max-width:980px;margin:56px auto 0;padding:28px 24px;border:1px solid var(--line);border-radius:12px;
     background:linear-gradient(135deg, rgba(17,24,39,.95), rgba(11,16,24,.95));display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center;box-shadow:var(--shadow);}
@@ -183,7 +198,9 @@
     td{padding:2px 0;border:none;}
     .rating::before{content:attr(data-label) ": ";color:var(--cream-dim);}
     .record-cell::before{content:attr(data-label) ": ";color:var(--cream-dim);}
-    .today-cell::before{content:attr(data-label) ": ";color:var(--cream-dim);}
+    .wr-cell::before{content:attr(data-label) ": ";color:var(--cream-dim);}
+    .wr-bar{display:inline-block;vertical-align:middle;margin:0 0 0 8px;}
+    thead th{position:static;}
     .support{flex-direction:column;align-items:flex-start;}
   }
 </style>
@@ -200,26 +217,33 @@
       <a href="./blog.html" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);text-decoration:none;letter-spacing:.06em;">📰 Blog →</a>
     </div>
     <p class="eyebrow">Refreshed daily from api.chess.com</p>
-    <h1>Kenya's, <em>chess.com Leaderboard</em></h1>
-    <p class="sub">Discover the highest-rated Kenyan players on Chess.com across Blitz, Rapid, Bullet, and Daily. ranked by rating.</p>
+    <h1>Kenya's <em>Chess.com</em> Leaderboard</h1>
+    <p class="sub">The highest-rated Kenyan players on Chess.com — across Rapid, Blitz, Bullet & Daily, refreshed automatically every day.</p>
     <div class="counter-row">
       <div class="counter"><span class="n" id="countFound">–</span><span class="l">players tracked</span></div>
       <div class="counter"><span class="n" id="avgRapid">–</span><span class="l">avg rapid rating</span></div>
-      <div class="counter"><span class="n" id="gamesToday">–</span><span class="l">games played today</span></div>
       <div class="counter"><span class="n" id="lastUpdated">–</span><span class="l">last updated</span></div>
     </div>
   </div>
 </header>
 
 <div class="controls">
-  <input type="text" id="search" placeholder="Search a player…">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search" placeholder="Search a player…" autocomplete="off">
+  </div>
   <select id="sortBy">
     <option value="rapid">Sort: Rapid</option>
     <option value="blitz">Sort: Blitz</option>
     <option value="bullet">Sort: Bullet</option>
     <option value="daily">Sort: Daily</option>
+    <option value="best">Sort: Best rating</option>
     <option value="username">Sort: A–Z</option>
   </select>
+  <label class="toggle" id="titlesToggle">
+    <input type="checkbox" id="titlesOnly">
+    <span>♛ Titled only</span>
+  </label>
 </div>
 
 <div class="status" id="status">Loading…</div>
@@ -235,7 +259,7 @@
         <th data-key="bullet">Bullet</th>
         <th data-key="daily">Daily</th>
         <th id="recordHeader">Record</th>
-        <th>Today</th>
+        <th id="winHeader">Win %</th>
         <th class="share-cell" aria-label="Share"></th>
       </tr>
     </thead>
@@ -249,7 +273,7 @@
   <div class="support">
     <div>
       <h2>Find this website useful?</h2>
-      <p>If you find this website usefull you can support me via M-Pesa.</p>
+      <p>If you find this website useful, you can support me via M-Pesa.</p>
     </div>
     <div class="support-actions">
       <div class="mpesa-box">M-Pesa: <b>0792-132-524</b></div>
@@ -275,13 +299,16 @@ const rowsEl = document.getElementById('rows');
 const paginationEl = document.getElementById('pagination');
 const countFoundEl = document.getElementById('countFound');
 const avgRapidEl = document.getElementById('avgRapid');
-const gamesTodayEl = document.getElementById('gamesToday');
 const lastUpdatedEl = document.getElementById('lastUpdated');
 const recordHeaderEl = document.getElementById('recordHeader');
+const winHeaderEl = document.getElementById('winHeader');
 const searchEl = document.getElementById('search');
 const sortSel = document.getElementById('sortBy');
+const titlesEl = document.getElementById('titlesOnly');
+const titlesToggleEl = document.getElementById('titlesToggle');
 
-const LABELS = { rapid:'Rapid', blitz:'Blitz', bullet:'Bullet', daily:'Daily', username:'A–Z' };
+const SORT_KEYS = ['rapid','blitz','bullet','daily','best','username'];
+const LABELS = { rapid:'Rapid', blitz:'Blitz', bullet:'Bullet', daily:'Daily', best:'Best', username:'A–Z' };
 const FALLBACK_AVATAR = 'https://www.chess.com/bundles/web/images/user-image.007dad08.svg';
 const SHARE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>';
 
@@ -296,10 +323,25 @@ function escapeHtml(str){
   ));
 }
 
+function bestFormat(p){
+  const r = p.ratings || {};
+  let fmt = null, top = -1;
+  for(const f of ['rapid','blitz','bullet','daily']){
+    if(r[f] != null && r[f] > top){ top = r[f]; fmt = f; }
+  }
+  return fmt;
+}
+
+function bestRating(p){
+  const f = bestFormat(p);
+  return f ? p.ratings[f] : null;
+}
+
 function sortPlayers(list){
   return list.slice().sort((a, b) => {
     if(sortKey === 'username') return a.username.localeCompare(b.username);
-    const av = a.ratings?.[sortKey] ?? null, bv = b.ratings?.[sortKey] ?? null;
+    const av = sortKey === 'best' ? bestRating(a) : (a.ratings?.[sortKey] ?? null);
+    const bv = sortKey === 'best' ? bestRating(b) : (b.ratings?.[sortKey] ?? null);
     if(av === null && bv === null) return a.username.localeCompare(b.username);
     if(av === null) return 1;
     if(bv === null) return -1;
@@ -324,22 +366,28 @@ function recordCell(records, key){
   return `<td class="record-cell" data-label="Record"><span class="w">${r.win}W</span>-<span class="l">${r.loss}L</span>-${r.draw}D</td>`;
 }
 
-function todayCell(count){
-  if(count === null || count === undefined) return `<td class="today-cell empty-cell" data-label="Today">—</td>`;
-  if(!count) return `<td class="today-cell no-games" data-label="Today">0</td>`;
-  return `<td class="today-cell has-games" data-label="Today">${count}</td>`;
+function winCell(records, key){
+  const r = records ? records[key] : null;
+  const total = r ? (r.win || 0) + (r.loss || 0) + (r.draw || 0) : 0;
+  if(!r || !total) return `<td class="wr-cell empty-cell" data-label="Win %">—</td>`;
+  const pct = Math.round((r.win / total) * 100);
+  return `<td class="wr-cell" data-label="Win %"><span class="pct">${pct}%</span><span class="wr-bar"><span style="width:${pct}%"></span></span></td>`;
 }
 
 function render(){
+  updateURL();
   const q = searchEl.value.trim().toLowerCase();
+  const titlesOnly = titlesEl.checked;
   const byUsername = sortKey === 'username';
+  const byBest = sortKey === 'best';
 
   // Rank the FULL list first so a player's rank reflects the whole
   // leaderboard, then filter for display. This keeps a searched player
   // at their true position instead of showing them as #1.
   const ranked = sortPlayers(players).map((p, i) => ({ p, rank: i + 1 }));
   const list = ranked.filter(({ p }) =>
-    !q || p.username.toLowerCase().includes(q) || (p.name || '').toLowerCase().includes(q)
+    (!q || p.username.toLowerCase().includes(q) || (p.name || '').toLowerCase().includes(q)) &&
+    (!titlesOnly || !!p.title)
   );
 
   const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
@@ -347,24 +395,33 @@ function render(){
   const start = (currentPage - 1) * PAGE_SIZE;
   const pageList = list.slice(start, start + PAGE_SIZE);
 
-  recordHeaderEl.textContent = `Record (${LABELS[byUsername ? 'rapid' : sortKey]})`;
+  const headLabel = LABELS[byUsername ? 'rapid' : sortKey];
+  recordHeaderEl.textContent = `Record (${headLabel})`;
+  winHeaderEl.textContent = `Win % (${headLabel})`;
 
   if(pageList.length === 0){
-    rowsEl.innerHTML = `<tr class="empty-row"><td colspan="9">No players match “${escapeHtml(searchEl.value.trim())}”.</td></tr>`;
+    const msg = titlesOnly && !q
+      ? 'No titled players to show.'
+      : `No players match “${escapeHtml(searchEl.value.trim())}”.`;
+    rowsEl.innerHTML = `<tr class="empty-row"><td colspan="9">${msg}</td></tr>`;
     renderPagination(1, 0);
     return;
   }
 
   rowsEl.innerHTML = pageList.map(({ p, rank }) => {
     // Medals only make sense for rating-based leaderboards, not A–Z.
-    const rankClass = !byUsername && rank <= 3 ? `top${rank}` : '';
+    const showMedal = !byUsername && rank <= 3;
+    const rankClass = showMedal ? `top${rank}` : '';
+    const rankInner = showMedal ? `<span class="medal">${rank}</span>` : rank;
     const avatar = escapeHtml(p.avatar || FALLBACK_AVATAR);
     const username = escapeHtml(p.username);
     const url = escapeHtml(p.url || `https://www.chess.com/member/${encodeURIComponent(p.username)}`);
     const titleTag = p.title ? `<span class="title-tag">${escapeHtml(p.title)}</span>` : '';
-    const recordKey = byUsername ? 'rapid' : sortKey;
+    // For the "Best" view each player's record/win-rate follows their own
+    // strongest format; otherwise it follows the chosen sort (rapid for A–Z).
+    const rowFmt = byUsername ? 'rapid' : (byBest ? (bestFormat(p) || 'rapid') : sortKey);
     return `<tr>
-      <td class="rank ${rankClass}">${rank}</td>
+      <td class="rank ${rankClass}">${rankInner}</td>
       <td><div class="player">
             <img src="${avatar}" alt="" loading="lazy" onerror="this.src='${FALLBACK_AVATAR}'">
             <span>${titleTag}<a href="${url}" target="_blank" rel="noopener">${username}</a></span>
@@ -373,8 +430,8 @@ function render(){
       ${ratingCell(p.ratings?.blitz, 'Blitz')}
       ${ratingCell(p.ratings?.bullet, 'Bullet')}
       ${ratingCell(p.ratings?.daily, 'Daily')}
-      ${recordCell(p.records, recordKey)}
-      ${todayCell(p.gamesToday)}
+      ${recordCell(p.records, rowFmt)}
+      ${winCell(p.records, rowFmt)}
       <td class="share-cell"><button class="share-btn" data-rank="${rank}" data-username="${username}" title="Share ${username}'s rank" aria-label="Share ${username}'s rank">${SHARE_ICON}</button></td>
     </tr>`;
   }).join('');
@@ -411,11 +468,26 @@ function renderPagination(totalPages, totalItems){
   });
 }
 
+function updateURL(){
+  const params = new URLSearchParams();
+  const q = searchEl.value.trim();
+  if(q) params.set('q', q);
+  if(sortKey !== 'rapid') params.set('sort', sortKey);
+  if(titlesEl.checked) params.set('titled', '1');
+  const qs = params.toString();
+  history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
+}
+
 searchEl.addEventListener('input', () => { currentPage = 1; render(); });
 sortSel.addEventListener('change', () => {
   sortKey = sortSel.value;
   currentPage = 1;
   syncActiveHeader();
+  render();
+});
+titlesEl.addEventListener('change', () => {
+  titlesToggleEl.classList.toggle('on', titlesEl.checked);
+  currentPage = 1;
   render();
 });
 document.querySelectorAll('thead th[data-key]').forEach(th => {
@@ -607,10 +679,19 @@ async function init(){
     players = Array.isArray(data.players) ? data.players : [];
     countFoundEl.textContent = data.totalWithData ?? players.length;
     avgRapidEl.textContent = data.communityStats?.avgRapid ?? '–';
-    gamesTodayEl.textContent = data.communityStats?.gamesToday ?? '0';
     lastUpdatedEl.textContent = data.generatedAt
       ? new Date(data.generatedAt).toLocaleDateString(undefined, { day:'numeric', month:'short' })
       : '–';
+
+    // Restore state from shareable URL (?q=&sort=&titled=1).
+    const params = new URLSearchParams(location.search);
+    const urlSort = params.get('sort');
+    if(urlSort && SORT_KEYS.includes(urlSort)){ sortKey = urlSort; sortSel.value = urlSort; }
+    const urlQ = params.get('q');
+    if(urlQ) searchEl.value = urlQ;
+    if(params.get('titled') === '1') titlesEl.checked = true;
+    titlesToggleEl.classList.toggle('on', titlesEl.checked);
+
     syncActiveHeader();
     render();
     setStatus(players.length
