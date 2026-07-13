@@ -247,6 +247,25 @@
   }
   .mpesa-box b{color:var(--green);}
 
+  .suggest-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .suggest-form input[type="text"]{
+    font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--field-bg);
+    border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--cream);
+    min-width:200px;box-shadow:inset 0 1px 0 var(--inset);
+  }
+  .suggest-form input:focus{outline:none;border-color:var(--gold);}
+  #suggestHoneypot{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;}
+  .suggest-form button{
+    font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;cursor:pointer;
+    background:var(--gold);color:var(--medal-ink);border:none;border-radius:8px;padding:10px 16px;
+    transition:opacity .15s;
+  }
+  .suggest-form button:hover{opacity:.9;}
+  .suggest-form button:disabled{opacity:.5;cursor:default;}
+  .suggest-msg{width:100%;margin:12px 0 0;font-size:13px;min-height:1em;}
+  .suggest-msg.ok{color:var(--green);}
+  .suggest-msg.err{color:var(--red);}
+
   .pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:24px 0 4px;flex-wrap:wrap;}
   .pagination button{
     background:var(--bg-panel);border:1px solid var(--line);color:var(--cream-dim);
@@ -346,6 +365,21 @@
   <div class="pagination" id="pagination"></div>
 
   <div id="shareModalRoot"></div>
+
+  <div class="support">
+    <div>
+      <h2>Missing a Kenyan player?</h2>
+      <p>Suggest a Chess.com username. If the account's country is set to Kenya, it's added automatically and shows up after the next daily refresh.</p>
+    </div>
+    <div class="support-actions">
+      <form id="suggestForm" class="suggest-form" autocomplete="off">
+        <input type="text" id="suggestUsername" name="username" placeholder="Chess.com username" aria-label="Chess.com username" required>
+        <input type="text" id="suggestHoneypot" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button type="submit" id="suggestSubmit">Add player</button>
+      </form>
+    </div>
+    <p id="suggestMsg" class="suggest-msg" role="status" aria-live="polite"></p>
+  </div>
 
   <div class="support">
     <div>
@@ -810,6 +844,52 @@ async function init(){
 }
 
 init();
+
+// Suggest-a-player form → Cloudflare Worker submit endpoint.
+// Set this to your deployed Worker URL after `wrangler deploy`.
+const SUBMIT_ENDPOINT = 'https://ke64-submit.YOUR-SUBDOMAIN.workers.dev/api/submit';
+
+const suggestForm = document.getElementById('suggestForm');
+const suggestUsername = document.getElementById('suggestUsername');
+const suggestHoneypot = document.getElementById('suggestHoneypot');
+const suggestSubmit = document.getElementById('suggestSubmit');
+const suggestMsg = document.getElementById('suggestMsg');
+
+function setSuggestMsg(text, kind){
+  suggestMsg.textContent = text;
+  suggestMsg.className = 'suggest-msg' + (kind ? ' ' + kind : '');
+}
+
+suggestForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = suggestUsername.value.trim();
+  if(!username){ setSuggestMsg('Enter a Chess.com username.', 'err'); return; }
+  if(SUBMIT_ENDPOINT.includes('YOUR-SUBDOMAIN')){
+    setSuggestMsg('Submissions aren\u2019t configured yet.', 'err');
+    return;
+  }
+
+  suggestSubmit.disabled = true;
+  setSuggestMsg('Checking\u2026');
+  try{
+    const res = await fetch(SUBMIT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, website: suggestHoneypot.value }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if(res.ok){
+      setSuggestMsg(data.message || 'Added! It\u2019ll appear after the next daily refresh.', 'ok');
+      suggestForm.reset();
+    }else{
+      setSuggestMsg(data.error || 'Something went wrong, try again.', 'err');
+    }
+  }catch(err){
+    setSuggestMsg('Network error \u2014 try again shortly.', 'err');
+  }finally{
+    suggestSubmit.disabled = false;
+  }
+});
 </script>
 </body>
 </html>
