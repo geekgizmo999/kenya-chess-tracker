@@ -6,6 +6,18 @@
 <title>KE64 — Kenyan Chess.com Tracker</title>
 <meta name="description" content="Every rated Kenyan player on Chess.com, ranked by Rapid, Blitz, Bullet & Daily. Updated automatically every day.">
 <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+<script>
+  // Apply saved/system theme before paint to avoid a flash of the wrong theme.
+  (function(){
+    try{
+      var saved = localStorage.getItem('ke64-theme');
+      var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', theme);
+    }catch(e){
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  })();
+</script>
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="KE64 — Kenya's Chess.com Leaderboard">
@@ -32,25 +44,71 @@
     --gold:#d7a94a;
     --line:#2a3443;
     --shadow:0 18px 48px rgba(0,0,0,.28);
+    /* themeable surfaces */
+    --body-bg:
+      radial-gradient(circle at top left, rgba(215,169,74,.16), transparent 24%),
+      radial-gradient(circle at bottom right, rgba(92,141,107,.14), transparent 28%),
+      linear-gradient(135deg, #06070b 0%, #0c1118 50%, #06070b 100%);
+    --hero-bg:linear-gradient(135deg, rgba(17,24,39,.98) 0%, rgba(9,14,22,.96) 100%);
+    --support-bg:linear-gradient(135deg, rgba(17,24,39,.95), rgba(11,16,24,.95));
+    --field-bg:rgba(17,24,39,.95);
+    --thead-bg:#0f1622;
+    --table-bg:rgba(255,255,255,.02);
+    --row-odd:rgba(23,32,51,.55);
+    --row-hover:rgba(215,169,74,.07);
+    --overlay:rgba(6,7,11,.85);
+    --mpesa-bg:rgba(6,7,11,.95);
+    --inset:rgba(255,255,255,.03);
+    --gold-soft:rgba(215,169,74,.09);
+    --gold-ring:rgba(215,169,74,.14);
+    --medal-ink:#1a1205;
+  }
+  html[data-theme="light"]{
+    --bg-void:#efe7d6;
+    --bg-panel:#fffdf8;
+    --bg-panel-alt:#efe8da;
+    --bg-panel-soft:#e7dcc6;
+    --cream:#20293a;
+    --cream-dim:#6a7180;
+    --red:#c0492f;
+    --green:#3f7350;
+    --gold:#a9781f;
+    --line:#ded4c1;
+    --shadow:0 18px 40px rgba(80,66,38,.16);
+    --body-bg:
+      radial-gradient(circle at top left, rgba(169,120,31,.12), transparent 24%),
+      radial-gradient(circle at bottom right, rgba(63,115,80,.10), transparent 28%),
+      linear-gradient(135deg, #f3ecdd 0%, #efe7d6 50%, #f3ecdd 100%);
+    --hero-bg:linear-gradient(135deg, rgba(255,253,248,.98) 0%, rgba(243,236,221,.96) 100%);
+    --support-bg:linear-gradient(135deg, rgba(255,253,248,.96), rgba(243,236,221,.96));
+    --field-bg:#fbf8f1;
+    --thead-bg:#efe8da;
+    --table-bg:#fffdf8;
+    --row-odd:rgba(72,58,30,.05);
+    --row-hover:rgba(169,120,31,.12);
+    --overlay:rgba(44,36,20,.45);
+    --mpesa-bg:#fffdf8;
+    --inset:rgba(255,255,255,.6);
+    --gold-soft:rgba(169,120,31,.12);
+    --gold-ring:rgba(169,120,31,.22);
+    --medal-ink:#1a1205;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
     min-height:100vh;
-    background:
-      radial-gradient(circle at top left, rgba(215,169,74,.16), transparent 24%),
-      radial-gradient(circle at bottom right, rgba(92,141,107,.14), transparent 28%),
-      linear-gradient(135deg, var(--bg-void) 0%, #0c1118 50%, #06070b 100%);
+    background:var(--body-bg);
     color:var(--cream);
     font-family:'Inter','Segoe UI',sans-serif;
     line-height:1.55;
     -webkit-font-smoothing:antialiased;
+    transition:background-color .25s ease, color .25s ease;
   }
   .wrap{max-width:980px;margin:0 auto;padding:0 24px 80px;}
 
   header.hero{
     padding:72px 24px 48px;text-align:left;border-bottom:1px solid var(--line);position:relative;overflow:hidden;
-    background:linear-gradient(135deg, rgba(17,24,39,.98) 0%, rgba(9,14,22,.96) 100%);
+    background:var(--hero-bg);
     box-shadow:inset 0 -1px 0 rgba(255,255,255,.04);
   }
   header.hero::before{
@@ -73,22 +131,22 @@
   .search-wrap{flex:1;min-width:200px;position:relative;display:flex;align-items:center;}
   .search-wrap svg{position:absolute;left:14px;width:16px;height:16px;color:var(--cream-dim);pointer-events:none;}
   input[type=text]{
-    background:rgba(17,24,39,.95);border:1px solid var(--line);color:var(--cream);width:100%;
-    padding:11px 14px 11px 40px;border-radius:11px;font-family:'Inter','Segoe UI',sans-serif;font-size:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);transition:border-color .15s,box-shadow .15s;
+    background:var(--field-bg);border:1px solid var(--line);color:var(--cream);width:100%;
+    padding:11px 14px 11px 40px;border-radius:11px;font-family:'Inter','Segoe UI',sans-serif;font-size:14px;box-shadow:inset 0 1px 0 var(--inset);transition:border-color .15s,box-shadow .15s;
   }
-  input[type=text]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(215,169,74,.14);}
+  input[type=text]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-ring);}
   select{
-    background:rgba(17,24,39,.95);border:1px solid var(--line);color:var(--cream);
-    padding:11px 14px;border-radius:11px;font-family:'IBM Plex Mono',monospace;font-size:13px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);cursor:pointer;
+    background:var(--field-bg);border:1px solid var(--line);color:var(--cream);
+    padding:11px 14px;border-radius:11px;font-family:'IBM Plex Mono',monospace;font-size:13px;box-shadow:inset 0 1px 0 var(--inset);cursor:pointer;
   }
   select:focus{outline:none;border-color:var(--gold);}
   .toggle{
     display:inline-flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--cream-dim);
-    cursor:pointer;user-select:none;background:rgba(17,24,39,.95);border:1px solid var(--line);padding:10px 15px;border-radius:11px;
+    cursor:pointer;user-select:none;background:var(--field-bg);border:1px solid var(--line);padding:10px 15px;border-radius:11px;
     transition:border-color .15s,color .15s,background .15s;white-space:nowrap;
   }
   .toggle:hover{border-color:var(--gold);color:var(--cream);}
-  .toggle.on{border-color:var(--gold);color:var(--gold);background:rgba(215,169,74,.09);}
+  .toggle.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
   .toggle input{display:none;}
   button{
     background:linear-gradient(135deg, var(--red), #bc4f3b);color:var(--cream);border:none;padding:10px 18px;border-radius:10px;
@@ -100,22 +158,22 @@
   .status{max-width:980px;margin:16px auto 0;padding:0 24px;color:var(--cream-dim);font-family:'IBM Plex Mono',monospace;font-size:12.5px;min-height:18px;}
   .status.error{color:var(--red);}
 
-  table{width:100%;border-collapse:collapse;margin-top:20px;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);background:rgba(255,255,255,.02);}
+  table{width:100%;border-collapse:collapse;margin-top:20px;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);background:var(--table-bg);}
   thead th{
     text-align:left;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;
     letter-spacing:.08em;color:var(--cream-dim);padding:12px 12px;border-bottom:1px solid var(--line);
-    cursor:pointer;user-select:none;white-space:nowrap;background:#0f1622;position:sticky;top:0;z-index:3;
+    cursor:pointer;user-select:none;white-space:nowrap;background:var(--thead-bg);position:sticky;top:0;z-index:3;
   }
   thead th[data-key]::after{content:"";display:inline-block;margin-left:5px;opacity:0;transition:opacity .15s;border-left:3px solid transparent;border-right:3px solid transparent;border-top:4px solid currentColor;transform:translateY(-1px);}
   thead th.active[data-key]::after{opacity:1;}
   thead th:hover{color:var(--gold);}
   thead th.active{color:var(--gold);}
   tbody tr{border-bottom:1px solid var(--line);transition:background .12s;}
-  tbody tr:nth-child(odd){background:rgba(23,32,51,.55);}
-  tbody tr:hover{background:rgba(215,169,74,.07);}
+  tbody tr:nth-child(odd){background:var(--row-odd);}
+  tbody tr:hover{background:var(--row-hover);}
   td{padding:11px 12px;font-size:14px;vertical-align:middle;}
   .rank{font-family:'IBM Plex Mono',monospace;color:var(--cream-dim);width:48px;font-variant-numeric:tabular-nums;font-weight:600;}
-  .rank .medal{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;border-radius:50%;font-size:12px;font-weight:700;color:#1a1205;}
+  .rank .medal{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;border-radius:50%;font-size:12px;font-weight:700;color:var(--medal-ink);}
   .rank.top1 .medal{background:linear-gradient(135deg,#f4d572,#d7a94a);box-shadow:0 2px 10px rgba(215,169,74,.4);}
   .rank.top2 .medal{background:linear-gradient(135deg,#e8e2d4,#b6afa0);}
   .rank.top3 .medal{background:linear-gradient(135deg,#d4a06a,#a9713f);}
@@ -136,13 +194,26 @@
   thead th.share-cell:hover{color:var(--cream-dim);}
   button.ghost{background:var(--bg-panel-alt);border:1px solid var(--line);color:var(--cream);box-shadow:none;}
   button.ghost:hover{border-color:var(--gold);color:var(--gold);opacity:1;}
+  .hero-nav{display:flex;align-items:center;gap:14px;}
+  .theme-toggle{
+    background:var(--field-bg);border:1px solid var(--line);color:var(--cream-dim);
+    width:36px;height:36px;padding:0;border-radius:10px;box-shadow:none;
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+    transition:border-color .15s,color .15s,background .15s;
+  }
+  .theme-toggle:hover{border-color:var(--gold);color:var(--gold);opacity:1;transform:none;}
+  .theme-toggle svg{width:18px;height:18px;display:block;}
+  .theme-toggle .icon-moon{display:none;}
+  .theme-toggle .icon-sun{display:block;}
+  html[data-theme="light"] .theme-toggle .icon-moon{display:block;}
+  html[data-theme="light"] .theme-toggle .icon-sun{display:none;}
   .brand{display:flex;align-items:center;gap:10px;}
   .brand img{width:30px;height:30px;border-radius:8px;display:block;}
   .brand .wordmark{font-family:'Cinzel',Georgia,serif;font-weight:700;font-size:17px;letter-spacing:.16em;color:var(--cream);}
   .empty-row td{padding:22px 12px;color:var(--cream-dim);text-align:center;}
 
   .modal-overlay{
-    position:fixed;inset:0;background:rgba(6,7,11,.85);backdrop-filter:blur(4px);
+    position:fixed;inset:0;background:var(--overlay);backdrop-filter:blur(4px);
     display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;
   }
   .modal-box{background:var(--bg-panel);border:1px solid var(--line);border-radius:16px;padding:24px;
@@ -152,7 +223,7 @@
   .modal-actions button{flex:1;}
   .modal-close{background:none;border:1px solid var(--line);color:var(--cream-dim);width:100%;margin-top:10px;padding:9px;}
   .modal-close:hover{opacity:1;border-color:var(--red);color:var(--red);}
-  .title-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#1a1205;background:linear-gradient(135deg,#f4d572,var(--gold));
+  .title-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--medal-ink);background:linear-gradient(135deg,#f4d572,var(--gold));
     padding:2px 6px;border-radius:4px;margin-right:7px;font-weight:700;letter-spacing:.03em;vertical-align:middle;}
   .rating{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;color:var(--cream);}
   .rating.dim{color:var(--cream-dim);}
@@ -166,13 +237,13 @@
   .wr-bar > span{display:block;height:100%;background:linear-gradient(90deg,var(--green),#7fb894);border-radius:3px;}
 
   .support{max-width:980px;margin:56px auto 0;padding:28px 24px;border:1px solid var(--line);border-radius:12px;
-    background:linear-gradient(135deg, rgba(17,24,39,.95), rgba(11,16,24,.95));display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center;box-shadow:var(--shadow);}
+    background:var(--support-bg);display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center;box-shadow:var(--shadow);}
   .support h2{font-family:'Cinzel',Georgia,serif;font-size:22px;font-weight:600;margin:0 0 6px;}
   .support p{color:var(--cream-dim);font-size:14px;margin:0;max-width:420px;line-height:1.6;}
   .support-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
   .mpesa-box{
-    font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(6,7,11,.95);
-    border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--cream);box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+    font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--mpesa-bg);
+    border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--cream);box-shadow:inset 0 1px 0 var(--inset);
   }
   .mpesa-box b{color:var(--green);}
 
@@ -183,7 +254,7 @@
     cursor:pointer;min-width:38px;
   }
   .pagination button:hover:not(:disabled){border-color:var(--gold);color:var(--gold);}
-  .pagination button.active{background:var(--gold);color:var(--bg-void);border-color:var(--gold);font-weight:600;}
+  .pagination button.active{background:var(--gold);color:#0f0a02;border-color:var(--gold);font-weight:600;}
   .pagination button:disabled{opacity:.35;cursor:default;}
   .pagination .gap{color:var(--cream-dim);padding:0 4px;font-family:'IBM Plex Mono',monospace;font-size:13px;}
 
@@ -214,7 +285,13 @@
         <img src="./assets/favicon.svg" alt="KE64 logo" width="30" height="30">
         <span class="wordmark">KE64</span>
       </div>
-      <a href="./blog.html" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);text-decoration:none;letter-spacing:.06em;">📰 Blog →</a>
+      <div class="hero-nav">
+        <a href="./blog.html" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);text-decoration:none;letter-spacing:.06em;">📰 Blog →</a>
+        <button type="button" id="themeToggle" class="theme-toggle" title="Toggle light / dark theme" aria-label="Toggle light or dark theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
     </div>
     <p class="eyebrow">Refreshed daily from api.chess.com</p>
     <h1>Kenya's <em>Chess.com</em> Leaderboard</h1>
@@ -306,6 +383,20 @@ const searchEl = document.getElementById('search');
 const sortSel = document.getElementById('sortBy');
 const titlesEl = document.getElementById('titlesOnly');
 const titlesToggleEl = document.getElementById('titlesToggle');
+const themeToggleEl = document.getElementById('themeToggle');
+
+function currentTheme(){
+  return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+}
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  themeToggleEl.setAttribute('aria-pressed', String(theme === 'light'));
+  try{ localStorage.setItem('ke64-theme', theme); }catch(e){}
+}
+applyTheme(currentTheme());
+themeToggleEl.addEventListener('click', () => {
+  applyTheme(currentTheme() === 'light' ? 'dark' : 'light');
+});
 
 const SORT_KEYS = ['rapid','blitz','bullet','daily','best','username'];
 const LABELS = { rapid:'Rapid', blitz:'Blitz', bullet:'Bullet', daily:'Daily', best:'Best', username:'A–Z' };
