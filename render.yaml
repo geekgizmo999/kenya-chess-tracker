@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: kenya-chess-tracker
+    runtime: static
+    buildCommand: "echo 'Static site — no build step'"
+    staticPublishPath: .
+    pullRequestPreviewsEnabled: true
+    routes:
+      - type: rewrite
+        source: /blog
+        destination: /blog.html

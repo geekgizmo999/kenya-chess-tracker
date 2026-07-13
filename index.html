@@ -762,11 +762,27 @@ rowsEl.addEventListener('click', (e) => {
   openShareModal(btn.dataset.username, parseInt(btn.dataset.rank, 10));
 });
 
+// Load data.json from the site itself; fall back to the jsDelivr CDN mirror
+// of the repo when the host can't serve the large file (e.g. Render).
+async function loadData(){
+  const sources = [
+    './data.json',
+    'https://cdn.jsdelivr.net/gh/geekgizmo999/kenya-chess-tracker@main/data.json'
+  ];
+  let lastErr;
+  for(const url of sources){
+    try{
+      const res = await fetch(url, { cache: 'no-store' });
+      if(res.ok) return await res.json();
+      lastErr = new Error(res.status);
+    }catch(e){ lastErr = e; }
+  }
+  throw lastErr || new Error('data.json unavailable');
+}
+
 async function init(){
   try{
-    const res = await fetch('./data.json', { cache: 'no-store' });
-    if(!res.ok) throw new Error(res.status);
-    const data = await res.json();
+    const data = await loadData();
     players = Array.isArray(data.players) ? data.players : [];
     countFoundEl.textContent = data.totalWithData ?? players.length;
     avgRapidEl.textContent = data.communityStats?.avgRapid ?? '–';
