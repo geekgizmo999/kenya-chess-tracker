@@ -115,6 +115,17 @@
     align-items:center;justify-content:center;transition:border-color .15s,color .15s;
   }
   .share-btn:hover{border-color:var(--gold);color:var(--gold);}
+  .share-btn svg{width:14px;height:14px;display:block;}
+  .share-cell{width:46px;text-align:center;}
+  .share-cell .share-btn{margin:0 auto;}
+  thead th.share-cell{cursor:default;}
+  thead th.share-cell:hover{color:var(--cream-dim);}
+  button.ghost{background:var(--bg-panel-alt);border:1px solid var(--line);color:var(--cream);box-shadow:none;}
+  button.ghost:hover{border-color:var(--gold);color:var(--gold);opacity:1;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand img{width:30px;height:30px;border-radius:8px;display:block;}
+  .brand .wordmark{font-family:'Cinzel',Georgia,serif;font-weight:700;font-size:17px;letter-spacing:.16em;color:var(--cream);}
+  .empty-row td{padding:22px 12px;color:var(--cream-dim);text-align:center;}
 
   .modal-overlay{
     position:fixed;inset:0;background:rgba(6,7,11,.85);backdrop-filter:blur(4px);
@@ -181,10 +192,14 @@
 
 <header class="hero">
   <div class="wrap" style="padding:0;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-      <p class="eyebrow" style="margin:0;">Refreshed daily from api.chess.com</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:16px;">
+      <div class="brand">
+        <img src="./assets/favicon.svg" alt="KE64 logo" width="30" height="30">
+        <span class="wordmark">KE64</span>
+      </div>
       <a href="./blog.html" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);text-decoration:none;letter-spacing:.06em;">📰 Blog →</a>
     </div>
+    <p class="eyebrow">Refreshed daily from api.chess.com</p>
     <h1>Kenya's, <em>chess.com Leaderboard</em></h1>
     <p class="sub">Discover the highest-rated Kenyan players on Chess.com across Blitz, Rapid, Bullet, and Daily. ranked by rating.</p>
     <div class="counter-row">
@@ -221,6 +236,7 @@
         <th data-key="daily">Daily</th>
         <th id="recordHeader">Record</th>
         <th>Today</th>
+        <th class="share-cell" aria-label="Share"></th>
       </tr>
     </thead>
     <tbody id="rows"></tbody>
@@ -265,9 +281,36 @@ const recordHeaderEl = document.getElementById('recordHeader');
 const searchEl = document.getElementById('search');
 const sortSel = document.getElementById('sortBy');
 
+const LABELS = { rapid:'Rapid', blitz:'Blitz', bullet:'Bullet', daily:'Daily', username:'A–Z' };
+const FALLBACK_AVATAR = 'https://www.chess.com/bundles/web/images/user-image.007dad08.svg';
+const SHARE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>';
+
 function setStatus(msg, isError){
   statusEl.textContent = msg;
   statusEl.classList.toggle('error', !!isError);
+}
+
+function escapeHtml(str){
+  return String(str ?? '').replace(/[&<>"']/g, c => (
+    { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+  ));
+}
+
+function sortPlayers(list){
+  return list.slice().sort((a, b) => {
+    if(sortKey === 'username') return a.username.localeCompare(b.username);
+    const av = a.ratings?.[sortKey] ?? null, bv = b.ratings?.[sortKey] ?? null;
+    if(av === null && bv === null) return a.username.localeCompare(b.username);
+    if(av === null) return 1;
+    if(bv === null) return -1;
+    return bv - av;
+  });
+}
+
+function syncActiveHeader(){
+  document.querySelectorAll('thead th[data-key]').forEach(t =>
+    t.classList.toggle('active', t.dataset.key === sortKey)
+  );
 }
 
 function ratingCell(val, label){
@@ -289,43 +332,50 @@ function todayCell(count){
 
 function render(){
   const q = searchEl.value.trim().toLowerCase();
-  let list = players.filter(p => !q || p.username.toLowerCase().includes(q) || (p.name||"").toLowerCase().includes(q));
+  const byUsername = sortKey === 'username';
 
-  list = list.slice().sort((a,b) => {
-    if(sortKey === "username") return a.username.localeCompare(b.username);
-    const av = a.ratings[sortKey], bv = b.ratings[sortKey];
-    if(av === null && bv === null) return 0;
-    if(av === null) return 1;
-    if(bv === null) return -1;
-    return bv - av;
-  });
+  // Rank the FULL list first so a player's rank reflects the whole
+  // leaderboard, then filter for display. This keeps a searched player
+  // at their true position instead of showing them as #1.
+  const ranked = sortPlayers(players).map((p, i) => ({ p, rank: i + 1 }));
+  const list = ranked.filter(({ p }) =>
+    !q || p.username.toLowerCase().includes(q) || (p.name || '').toLowerCase().includes(q)
+  );
 
   const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
   if(currentPage > totalPages) currentPage = totalPages;
   const start = (currentPage - 1) * PAGE_SIZE;
   const pageList = list.slice(start, start + PAGE_SIZE);
 
-  recordHeaderEl.textContent = `Record (${sortKey.charAt(0).toUpperCase() + sortKey.slice(1)})`;
+  recordHeaderEl.textContent = `Record (${LABELS[byUsername ? 'rapid' : sortKey]})`;
 
-  rowsEl.innerHTML = pageList.map((p, i) => {
-    const rank = start + i;
-    const rankClass = rank===0 ? "top1" : rank===1 ? "top2" : rank===2 ? "top3" : "";
-    const avatar = p.avatar || 'https://www.chess.com/bundles/web/images/user-image.007dad08.svg';
-    const titleTag = p.title ? `<span class="title-tag">${p.title}</span>` : '';
-    const recordKey = sortKey === "username" ? "rapid" : sortKey;
+  if(pageList.length === 0){
+    rowsEl.innerHTML = `<tr class="empty-row"><td colspan="9">No players match “${escapeHtml(searchEl.value.trim())}”.</td></tr>`;
+    renderPagination(1, 0);
+    return;
+  }
+
+  rowsEl.innerHTML = pageList.map(({ p, rank }) => {
+    // Medals only make sense for rating-based leaderboards, not A–Z.
+    const rankClass = !byUsername && rank <= 3 ? `top${rank}` : '';
+    const avatar = escapeHtml(p.avatar || FALLBACK_AVATAR);
+    const username = escapeHtml(p.username);
+    const url = escapeHtml(p.url || `https://www.chess.com/member/${encodeURIComponent(p.username)}`);
+    const titleTag = p.title ? `<span class="title-tag">${escapeHtml(p.title)}</span>` : '';
+    const recordKey = byUsername ? 'rapid' : sortKey;
     return `<tr>
-      <td class="rank ${rankClass}">${rank+1}</td>
+      <td class="rank ${rankClass}">${rank}</td>
       <td><div class="player">
-            <img src="${avatar}" alt="" loading="lazy">
-            <span>${titleTag}<a href="${p.url}" target="_blank">${p.username}</a></span>
-            <button class="share-btn" data-rank="${rank+1}" data-username="${p.username}" title="Share this rank">📤</button>
+            <img src="${avatar}" alt="" loading="lazy" onerror="this.src='${FALLBACK_AVATAR}'">
+            <span>${titleTag}<a href="${url}" target="_blank" rel="noopener">${username}</a></span>
           </div></td>
-      ${ratingCell(p.ratings.rapid, 'Rapid')}
-      ${ratingCell(p.ratings.blitz, 'Blitz')}
-      ${ratingCell(p.ratings.bullet, 'Bullet')}
-      ${ratingCell(p.ratings.daily, 'Daily')}
+      ${ratingCell(p.ratings?.rapid, 'Rapid')}
+      ${ratingCell(p.ratings?.blitz, 'Blitz')}
+      ${ratingCell(p.ratings?.bullet, 'Bullet')}
+      ${ratingCell(p.ratings?.daily, 'Daily')}
       ${recordCell(p.records, recordKey)}
       ${todayCell(p.gamesToday)}
+      <td class="share-cell"><button class="share-btn" data-rank="${rank}" data-username="${username}" title="Share ${username}'s rank" aria-label="Share ${username}'s rank">${SHARE_ICON}</button></td>
     </tr>`;
   }).join('');
 
@@ -362,14 +412,18 @@ function renderPagination(totalPages, totalItems){
 }
 
 searchEl.addEventListener('input', () => { currentPage = 1; render(); });
-sortSel.addEventListener('change', () => { sortKey = sortSel.value; currentPage = 1; render(); });
+sortSel.addEventListener('change', () => {
+  sortKey = sortSel.value;
+  currentPage = 1;
+  syncActiveHeader();
+  render();
+});
 document.querySelectorAll('thead th[data-key]').forEach(th => {
   th.addEventListener('click', () => {
     sortKey = th.dataset.key;
     sortSel.value = sortKey;
     currentPage = 1;
-    document.querySelectorAll('thead th').forEach(t => t.classList.remove('active'));
-    th.classList.add('active');
+    syncActiveHeader();
     render();
   });
 });
@@ -482,9 +536,13 @@ function drawShareCard(canvas, { rank, username, rating, format }) {
 function openShareModal(username, rank){
   const player = players.find(p => p.username === username);
   if(!player) return;
-  const format = sortKey === 'username' ? 'rapid' : sortKey;
+  // Use the current sort's format, but fall back to any rating the player
+  // has so the card still works instead of erroring out.
+  const preferred = sortKey === 'username' ? 'rapid' : sortKey;
+  const format = [preferred, 'rapid', 'blitz', 'bullet', 'daily']
+    .find(f => player.ratings?.[f] != null);
+  if(!format){ alert(`${username} has no ratings to share yet.`); return; }
   const rating = player.ratings[format];
-  if(rating === null){ alert(`${username} doesn't have a ${format} rating to share.`); return; }
 
   const root = document.getElementById('shareModalRoot');
   root.innerHTML = `
@@ -503,9 +561,12 @@ function openShareModal(username, rank){
   const canvas = document.getElementById('shareCanvas');
   drawShareCard(canvas, { rank, username, rating, format });
 
-  document.getElementById('closeBtn').addEventListener('click', () => root.innerHTML = '');
+  const close = () => { root.innerHTML = ''; document.removeEventListener('keydown', onKey); };
+  const onKey = (e) => { if(e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  document.getElementById('closeBtn').addEventListener('click', close);
   document.getElementById('modalOverlay').addEventListener('click', (e) => {
-    if(e.target.id === 'modalOverlay') root.innerHTML = '';
+    if(e.target.id === 'modalOverlay') close();
   });
   document.getElementById('downloadBtn').addEventListener('click', () => {
     const link = document.createElement('a');
@@ -543,15 +604,18 @@ async function init(){
     const res = await fetch('./data.json', { cache: 'no-store' });
     if(!res.ok) throw new Error(res.status);
     const data = await res.json();
-    players = data.players || [];
+    players = Array.isArray(data.players) ? data.players : [];
     countFoundEl.textContent = data.totalWithData ?? players.length;
     avgRapidEl.textContent = data.communityStats?.avgRapid ?? '–';
     gamesTodayEl.textContent = data.communityStats?.gamesToday ?? '0';
     lastUpdatedEl.textContent = data.generatedAt
       ? new Date(data.generatedAt).toLocaleDateString(undefined, { day:'numeric', month:'short' })
       : '–';
+    syncActiveHeader();
     render();
-    setStatus(`Showing ${players.length} tracked players. Data refreshes daily.`);
+    setStatus(players.length
+      ? `Showing ${players.length} tracked players. Data refreshes daily.`
+      : 'No players tracked yet — the daily job may not have run.');
   }catch(e){
     setStatus("Couldn't load data.json — make sure it's sitting next to index.html and the daily job has run at least once.", true);
   }
