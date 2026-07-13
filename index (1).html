@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KE64 — Kenyan Chess.com Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-void:#06070b;
+    --bg-panel:#111827;
+    --bg-panel-alt:#172033;
+    --bg-panel-soft:#1d283a;
+    --cream:#f4efe7;
+    --cream-dim:#9aa6b6;
+    --red:#d15b45;
+    --green:#5c8d6b;
+    --gold:#d7a94a;
+    --line:#2a3443;
+    --shadow:0 18px 48px rgba(0,0,0,.28);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at top left, rgba(215,169,74,.16), transparent 24%),
+      radial-gradient(circle at bottom right, rgba(92,141,107,.14), transparent 28%),
+      linear-gradient(135deg, var(--bg-void) 0%, #0c1118 50%, #06070b 100%);
+    color:var(--cream);
+    font-family:'Inter','Segoe UI',sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:0 24px 80px;}
+
+  header.hero{
+    padding:72px 24px 48px;text-align:left;border-bottom:1px solid var(--line);position:relative;overflow:hidden;
+    background:linear-gradient(135deg, rgba(17,24,39,.98) 0%, rgba(9,14,22,.96) 100%);
+    box-shadow:inset 0 -1px 0 rgba(255,255,255,.04);
+  }
+  header.hero::before{
+    content:"";position:absolute;top:-40px;right:-60px;width:320px;height:320px;
+    background:
+      linear-gradient(45deg, rgba(215,169,74,.16) 25%, transparent 25%, transparent 75%, rgba(92,141,107,.16) 75%),
+      linear-gradient(-45deg, rgba(215,169,74,.18) 25%, transparent 25%, transparent 75%, rgba(209,91,69,.16) 75%);
+    background-size:42px 42px;opacity:.95;transform:rotate(8deg);pointer-events:none;border-radius:50%;
+  }
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 18px;}
+  h1{font-family:'Cinzel',Georgia,serif;font-weight:700;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:0 0 20px;max-width:760px;letter-spacing:.02em;}
+  h1 em{font-style:italic;font-weight:500;color:var(--cream-dim);}
+  .sub{max-width:600px;color:var(--cream-dim);font-size:16px;line-height:1.7;margin:0 0 32px;font-family:'Inter','Segoe UI',sans-serif;}
+  .counter-row{display:flex;gap:36px;flex-wrap:wrap;align-items:baseline;}
+  .counter{font-family:'IBM Plex Mono',monospace;}
+  .counter .n{font-size:34px;font-weight:600;color:var(--cream);display:block;font-variant-numeric:tabular-nums;}
+  .counter .l{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--cream-dim);}
+
+  .controls{max-width:980px;margin:0 auto;padding:28px 24px 0;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  input[type=text]{
+    background:rgba(17,24,39,.95);border:1px solid var(--line);color:var(--cream);
+    padding:10px 14px;border-radius:8px;font-family:'Inter','Segoe UI',sans-serif;font-size:14px;flex:1;min-width:180px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  input[type=text]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(215,169,74,.16);}
+  select{
+    background:rgba(17,24,39,.95);border:1px solid var(--line);color:var(--cream);
+    padding:10px 14px;border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:13px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  button{
+    background:linear-gradient(135deg, var(--red), #bc4f3b);color:var(--cream);border:none;padding:10px 18px;border-radius:8px;
+    font-family:'Inter','Segoe UI',sans-serif;font-weight:600;font-size:14px;cursor:pointer;transition:transform .15s,opacity .15s,box-shadow .15s;
+    box-shadow:0 8px 20px rgba(209,91,69,.2);
+  }
+  button:hover{opacity:.92;transform:translateY(-1px);}
+
+  button.ghost{
+    background:rgba(17,24,39,.95);color:var(--cream);border:1px solid var(--line);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.03);display:inline-flex;align-items:center;gap:7px;
+  }
+  button.ghost:hover{border-color:var(--gold);color:var(--gold);opacity:1;}
+  button.ghost svg{width:15px;height:15px;flex:none;}
+
+  .row-share{
+    background:transparent;border:1px solid transparent;color:var(--cream-dim);
+    padding:5px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+    box-shadow:none;transition:color .12s,border-color .12s,background .12s;line-height:0;
+  }
+  .row-share:hover{color:var(--gold);border-color:var(--line);background:rgba(215,169,74,.08);opacity:1;transform:none;}
+  .row-share svg{width:15px;height:15px;}
+  .share-cell{width:40px;text-align:right;}
+
+  .toast{
+    position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+    background:var(--bg-panel-alt);color:var(--cream);border:1px solid var(--gold);
+    padding:11px 18px;border-radius:10px;font-family:'IBM Plex Mono',monospace;font-size:13px;
+    box-shadow:0 14px 40px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .status{max-width:980px;margin:16px auto 0;padding:0 24px;color:var(--cream-dim);font-family:'IBM Plex Mono',monospace;font-size:12.5px;min-height:18px;}
+  .status.error{color:var(--red);}
+
+  table{width:100%;border-collapse:collapse;margin-top:20px;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);background:rgba(255,255,255,.02);}
+  thead th{
+    text-align:left;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;
+    letter-spacing:.08em;color:var(--cream-dim);padding:10px 12px;border-bottom:1px solid var(--line);
+    cursor:pointer;user-select:none;white-space:nowrap;background:rgba(17,24,39,.9);
+  }
+  thead th:hover{color:var(--gold);}
+  thead th.active{color:var(--gold);}
+  tbody tr{border-bottom:1px solid var(--line);transition:background .12s;}
+  tbody tr:nth-child(odd){background:rgba(23,32,51,.7);}
+  tbody tr:hover{background:rgba(29,40,58,.95);}
+  td{padding:12px;font-size:14px;vertical-align:middle;}
+  .rank{font-family:'IBM Plex Mono',monospace;color:var(--cream-dim);width:34px;}
+  .rank.top1{color:var(--gold);font-weight:600;}
+  .rank.top2{color:#c9c2b2;font-weight:600;}
+  .rank.top3{color:#b98a55;font-weight:600;}
+  .player{display:flex;align-items:center;gap:10px;}
+  .player img{width:32px;height:32px;border-radius:5px;object-fit:cover;background:var(--line);}
+  .player a{color:var(--cream);text-decoration:none;font-weight:500;}
+  .player a:hover{color:var(--gold);}
+  .title-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--bg-void);background:var(--gold);
+    padding:1px 5px;border-radius:3px;margin-right:6px;font-weight:600;}
+  .rating{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;color:var(--cream);}
+  .rating.dim{color:var(--cream-dim);}
+  .empty-cell{color:var(--line);}
+  .record-cell{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--cream-dim);white-space:nowrap;}
+  .record-cell .w{color:var(--green);}
+  .record-cell .l{color:var(--red);}
+  .today-cell{font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:center;}
+  .today-cell.has-games{color:var(--gold);font-weight:600;}
+  .today-cell.no-games{color:var(--line);}
+
+  .support{max-width:980px;margin:56px auto 0;padding:28px 24px;border:1px solid var(--line);border-radius:12px;
+    background:linear-gradient(135deg, rgba(17,24,39,.95), rgba(11,16,24,.95));display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center;box-shadow:var(--shadow);}
+  .support h2{font-family:'Cinzel',Georgia,serif;font-size:22px;font-weight:600;margin:0 0 6px;}
+  .support p{color:var(--cream-dim);font-size:14px;margin:0;max-width:420px;line-height:1.6;}
+  .support-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .mpesa-box{
+    font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(6,7,11,.95);
+    border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--cream);box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  .mpesa-box b{color:var(--green);}
+
+  .pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:24px 0 4px;flex-wrap:wrap;}
+  .pagination button{
+    background:var(--bg-panel);border:1px solid var(--line);color:var(--cream-dim);
+    padding:8px 13px;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;
+    cursor:pointer;min-width:38px;
+  }
+  .pagination button:hover:not(:disabled){border-color:var(--gold);color:var(--gold);}
+  .pagination button.active{background:var(--gold);color:var(--bg-void);border-color:var(--gold);font-weight:600;}
+  .pagination button:disabled{opacity:.35;cursor:default;}
+  .pagination .gap{color:var(--cream-dim);padding:0 4px;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+
+  footer{max-width:980px;margin:40px auto 0;padding:0 24px;color:var(--cream-dim);font-size:12.5px;line-height:1.7;border-top:1px solid var(--line);padding-top:24px;}
+  footer a{color:var(--gold);}
+
+  @media (max-width:640px){
+    header.hero{padding:48px 20px 32px;}
+    table thead{display:none;}
+    table, tbody, tr, td{display:block;width:100%;}
+    tbody tr{padding:14px 12px;border-bottom:1px solid var(--line);}
+    td{padding:2px 0;border:none;}
+    .rating::before{content:attr(data-label) ": ";color:var(--cream-dim);}
+    .record-cell::before{content:attr(data-label) ": ";color:var(--cream-dim);}
+    .today-cell::before{content:attr(data-label) ": ";color:var(--cream-dim);}
+    .support{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap" style="padding:0;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <p class="eyebrow" style="margin:0;">Refreshed daily from api.chess.com</p>
+      <a href="./blog.html" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);text-decoration:none;letter-spacing:.06em;">📰 Blog →</a>
+    </div>
+    <h1>Kenya's, <em>chess.com Leaderboard</em></h1>
+    <p class="sub">Discover the highest-rated Kenyan players on Chess.com across Blitz, Rapid, Bullet, and Daily. ranked by rating.</p>
+    <div class="counter-row">
+      <div class="counter"><span class="n" id="countFound">–</span><span class="l">players tracked</span></div>
+      <div class="counter"><span class="n" id="avgRapid">–</span><span class="l">avg rapid rating</span></div>
+      <div class="counter"><span class="n" id="gamesToday">–</span><span class="l">games played today</span></div>
+      <div class="counter"><span class="n" id="lastUpdated">–</span><span class="l">last updated</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search a player…">
+  <select id="sortBy">
+    <option value="rapid">Sort: Rapid</option>
+    <option value="blitz">Sort: Blitz</option>
+    <option value="bullet">Sort: Bullet</option>
+    <option value="daily">Sort: Daily</option>
+    <option value="username">Sort: A–Z</option>
+  </select>
+  <button id="shareBtn" class="ghost" type="button" title="Share this leaderboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
+    Share
+  </button>
+</div>
+
+<div class="status" id="status">Loading…</div>
+
+<div class="wrap" style="padding-top:0;">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:34px;">#</th>
+        <th>Player</th>
+        <th data-key="rapid">Rapid</th>
+        <th data-key="blitz">Blitz</th>
+        <th data-key="bullet">Bullet</th>
+        <th data-key="daily">Daily</th>
+        <th id="recordHeader">Record</th>
+        <th>Today</th>
+        <th class="share-cell" aria-label="Share"></th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <div class="pagination" id="pagination"></div>
+
+  <div class="support">
+    <div>
+      <h2>Find this website useful?</h2>
+      <p>If you find this website usefull you can support me via M-Pesa.</p>
+    </div>
+    <div class="support-actions">
+      <div class="mpesa-box">M-Pesa: <b>0792-132-524</b></div>
+    </div>
+  </div>
+</div>
+
+<footer class="wrap" style="padding-left:0;padding-right:0;">
+  Data via the official public <a href="https://www.chess.com/news/view/published-data-api" target="_blank">Chess.com API</a>, fetched once daily by an automated job. Built for the Kenyan chess community.
+  <p style="font-family:'Cinzel',Georgia,serif;font-size:22px;font-weight:600;color:var(--cream);margin:16px 0 0;">
+    🖤❤️ Hey thanks for stoping by <span style="color:var(--gold);">S1MON</span> 💚
+  </p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+let players = [];
+let sortKey = "rapid";
+let currentPage = 1;
+const PAGE_SIZE = 25;
+
+const statusEl = document.getElementById('status');
+const rowsEl = document.getElementById('rows');
+const paginationEl = document.getElementById('pagination');
+const countFoundEl = document.getElementById('countFound');
+const avgRapidEl = document.getElementById('avgRapid');
+const gamesTodayEl = document.getElementById('gamesToday');
+const lastUpdatedEl = document.getElementById('lastUpdated');
+const recordHeaderEl = document.getElementById('recordHeader');
+const searchEl = document.getElementById('search');
+const sortSel = document.getElementById('sortBy');
+const shareBtn = document.getElementById('shareBtn');
+const toastEl = document.getElementById('toast');
+
+const LABELS = { rapid:'Rapid', blitz:'Blitz', bullet:'Bullet', daily:'Daily', username:'A–Z' };
+const FALLBACK_AVATAR = 'https://www.chess.com/bundles/web/images/user-image.007dad08.svg';
+
+function setStatus(msg, isError){
+  statusEl.textContent = msg;
+  statusEl.classList.toggle('error', !!isError);
+}
+
+function escapeHtml(str){
+  return String(str ?? '').replace(/[&<>"']/g, c => (
+    { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+  ));
+}
+
+let toastTimer;
+function showToast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
+}
+
+async function share({ title, text }){
+  const url = location.href;
+  if(navigator.share){
+    try{
+      await navigator.share({ title, text, url });
+      return;
+    }catch(err){
+      if(err && err.name === 'AbortError') return; // user dismissed the sheet
+    }
+  }
+  try{
+    await navigator.clipboard.writeText(`${text} ${url}`);
+    showToast('Link copied to clipboard');
+  }catch{
+    showToast('Copy failed — copy the page URL manually');
+  }
+}
+
+function sortPlayers(list){
+  return list.slice().sort((a, b) => {
+    if(sortKey === 'username') return a.username.localeCompare(b.username);
+    const av = a.ratings?.[sortKey] ?? null, bv = b.ratings?.[sortKey] ?? null;
+    if(av === null && bv === null) return a.username.localeCompare(b.username);
+    if(av === null) return 1;
+    if(bv === null) return -1;
+    return bv - av;
+  });
+}
+
+function ratingCell(val, label){
+  if(val === null || val === undefined) return `<td class="rating dim empty-cell" data-label="${label}">—</td>`;
+  return `<td class="rating" data-label="${label}">${val}</td>`;
+}
+
+function recordCell(records, key){
+  const r = records ? records[key] : null;
+  if(!r) return `<td class="record-cell empty-cell" data-label="Record">—</td>`;
+  return `<td class="record-cell" data-label="Record"><span class="w">${r.win}W</span>-<span class="l">${r.loss}L</span>-${r.draw}D</td>`;
+}
+
+function todayCell(count){
+  if(count === null || count === undefined) return `<td class="today-cell empty-cell" data-label="Today">—</td>`;
+  if(!count) return `<td class="today-cell no-games" data-label="Today">0</td>`;
+  return `<td class="today-cell has-games" data-label="Today">${count}</td>`;
+}
+
+function render(){
+  const q = searchEl.value.trim().toLowerCase();
+  const byUsername = sortKey === 'username';
+
+  // Rank the FULL list first so a player's rank reflects the whole
+  // leaderboard, then filter for display. This keeps a searched player
+  // at their true position instead of showing them as #1.
+  const ranked = sortPlayers(players).map((p, i) => ({ p, rank: i + 1 }));
+  const list = ranked.filter(({ p }) =>
+    !q || p.username.toLowerCase().includes(q) || (p.name || '').toLowerCase().includes(q)
+  );
+
+  const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  if(currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageList = list.slice(start, start + PAGE_SIZE);
+
+  recordHeaderEl.textContent = `Record (${LABELS[byUsername ? 'rapid' : sortKey]})`;
+
+  if(pageList.length === 0){
+    rowsEl.innerHTML = `<tr><td colspan="9" style="padding:22px 12px;color:var(--cream-dim);text-align:center;">No players match “${escapeHtml(searchEl.value.trim())}”.</td></tr>`;
+    renderPagination(1, 0);
+    return;
+  }
+
+  rowsEl.innerHTML = pageList.map(({ p, rank }) => {
+    // Medals only make sense for rating-based leaderboards, not A–Z.
+    const rankClass = !byUsername && rank <= 3 ? `top${rank}` : '';
+    const avatar = escapeHtml(p.avatar || FALLBACK_AVATAR);
+    const username = escapeHtml(p.username);
+    const url = escapeHtml(p.url || `https://www.chess.com/member/${encodeURIComponent(p.username)}`);
+    const titleTag = p.title ? `<span class="title-tag">${escapeHtml(p.title)}</span>` : '';
+    const recordKey = byUsername ? 'rapid' : sortKey;
+    return `<tr>
+      <td class="rank ${rankClass}">${rank}</td>
+      <td><div class="player">
+            <img src="${avatar}" alt="" loading="lazy" onerror="this.src='${FALLBACK_AVATAR}'">
+            <span>${titleTag}<a href="${url}" target="_blank" rel="noopener">${username}</a></span>
+          </div></td>
+      ${ratingCell(p.ratings?.rapid, 'Rapid')}
+      ${ratingCell(p.ratings?.blitz, 'Blitz')}
+      ${ratingCell(p.ratings?.bullet, 'Bullet')}
+      ${ratingCell(p.ratings?.daily, 'Daily')}
+      ${recordCell(p.records, recordKey)}
+      ${todayCell(p.gamesToday)}
+      <td class="share-cell">
+        <button class="row-share" type="button" data-user="${username}" data-rank="${rank}" title="Share ${username}'s rank" aria-label="Share ${username}'s rank">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderPagination(totalPages, list.length);
+}
+
+function renderPagination(totalPages, totalItems){
+  if(totalItems === 0){ paginationEl.innerHTML = ''; return; }
+
+  const btn = (label, page, opts = {}) =>
+    `<button ${opts.disabled ? 'disabled' : ''} ${opts.active ? 'class="active"' : ''} data-page="${page}">${label}</button>`;
+
+  let html = '';
+  html += btn('‹ Prev', currentPage - 1, { disabled: currentPage === 1 });
+
+  const pages = new Set([1, totalPages, currentPage, currentPage - 1, currentPage + 1]);
+  let prev = 0;
+  for(const p of [...pages].filter(p => p >= 1 && p <= totalPages).sort((a,b) => a-b)){
+    if(prev && p - prev > 1) html += `<span class="gap">…</span>`;
+    html += btn(p, p, { active: p === currentPage });
+    prev = p;
+  }
+
+  html += btn('Next ›', currentPage + 1, { disabled: currentPage === totalPages });
+  paginationEl.innerHTML = html;
+
+  paginationEl.querySelectorAll('button[data-page]').forEach(b => {
+    b.addEventListener('click', () => {
+      currentPage = parseInt(b.dataset.page, 10);
+      render();
+      window.scrollTo({ top: document.querySelector('.controls').offsetTop - 20, behavior: 'smooth' });
+    });
+  });
+}
+
+function syncActiveHeader(){
+  document.querySelectorAll('thead th[data-key]').forEach(t =>
+    t.classList.toggle('active', t.dataset.key === sortKey)
+  );
+}
+
+searchEl.addEventListener('input', () => { currentPage = 1; render(); });
+sortSel.addEventListener('change', () => {
+  sortKey = sortSel.value;
+  currentPage = 1;
+  syncActiveHeader();
+  render();
+});
+document.querySelectorAll('thead th[data-key]').forEach(th => {
+  th.addEventListener('click', () => {
+    sortKey = th.dataset.key;
+    sortSel.value = sortKey;
+    currentPage = 1;
+    syncActiveHeader();
+    render();
+  });
+});
+
+shareBtn.addEventListener('click', () => share({
+  title: 'KE64 — Kenyan Chess.com Leaderboard',
+  text: 'Check out the top-rated Kenyan players on Chess.com 🇰🇪 ♟️'
+}));
+
+rowsEl.addEventListener('click', e => {
+  const btn = e.target.closest('.row-share');
+  if(!btn) return;
+  const user = btn.dataset.user;
+  const rank = btn.dataset.rank;
+  share({
+    title: `${user} on KE64`,
+    text: `${user} is ranked #${rank} on KE64 — the Kenyan Chess.com leaderboard 🇰🇪 ♟️`
+  });
+});
+
+async function init(){
+  try{
+    const res = await fetch('./data.json', { cache: 'no-store' });
+    if(!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    players = Array.isArray(data.players) ? data.players : [];
+    countFoundEl.textContent = data.totalWithData ?? players.length;
+    avgRapidEl.textContent = data.communityStats?.avgRapid ?? '–';
+    gamesTodayEl.textContent = data.communityStats?.gamesToday ?? '0';
+    lastUpdatedEl.textContent = data.generatedAt
+      ? new Date(data.generatedAt).toLocaleDateString(undefined, { day:'numeric', month:'short' })
+      : '–';
+    syncActiveHeader();
+    render();
+    setStatus(players.length
+      ? `Showing ${players.length} tracked players. Data refreshes daily.`
+      : 'No players tracked yet — the daily job may not have run.');
+  }catch(e){
+    setStatus("Couldn't load data.json — make sure it's sitting next to index.html and the daily job has run at least once.", true);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
