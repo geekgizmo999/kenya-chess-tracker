@@ -4,20 +4,29 @@
 // Run with: node scripts/fetch-data.mjs
 // Needs Node 18+ (built-in fetch). No dependencies.
 
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 
 const COUNTRY_CODE = "KE";
 
 // Chess.com's country directory (fetched below) can lag for weeks after someone
-// sets their flag to Kenya — sometimes it just never catches up. Add usernames
-// here (lowercase) for real Kenyan players who should show up regardless of
-// whether Chess.com's own list has noticed them yet. Duplicates with the
-// official list are handled automatically, so it's safe to add someone here
-// even if they later do show up in the country list too.
-const MANUAL_ADDITIONS = [
-  "simonwangombe",
-  // "Elishahezekiah",
-];
+// sets their flag to Kenya — sometimes it just never catches up. Extra usernames
+// live in additions.json so they can be edited by the submit-a-player endpoint
+// without touching this script. Duplicates with the official list are handled
+// automatically, so it's safe to include someone here even if they later show up
+// in the country list too.
+const ADDITIONS_FILE = new URL("../additions.json", import.meta.url);
+
+async function loadManualAdditions() {
+  try {
+    const raw = await readFile(ADDITIONS_FILE, "utf8");
+    const parsed = JSON.parse(raw);
+    const list = Array.isArray(parsed?.usernames) ? parsed.usernames : [];
+    return list.filter((u) => typeof u === "string" && u.trim()).map((u) => u.trim());
+  } catch (e) {
+    console.log(`No usable additions.json (${e.message}) — continuing without manual additions.`);
+    return [];
+  }
+}
 const CONCURRENCY = 8;        // how many players are processed at once
 const DELAY_MS = 120;         // pause between requests per worker, stay polite to the API
 const MAX_RETRIES = 2;        // retry transient failures before giving up on a player
@@ -149,8 +158,9 @@ async function main() {
     `https://api.chess.com/pub/country/${COUNTRY_CODE}/players`
   );
 
+  const manualAdditions = await loadManualAdditions();
   const officialSet = new Set(officialUsernames.map(u => u.toLowerCase()));
-  const extras = MANUAL_ADDITIONS.filter(u => !officialSet.has(u.toLowerCase()));
+  const extras = manualAdditions.filter(u => !officialSet.has(u.toLowerCase()));
   const usernames = [...officialUsernames, ...extras];
 
   console.log(`Found ${officialUsernames.length} accounts flagged Kenya, plus ${extras.length} manual addition(s). Fetching stats…`);

@@ -1,0 +1,15 @@
+name = "ke64-submit"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# Set these with:
+#   wrangler secret put GITHUB_TOKEN      (fine-grained PAT, Contents: Read & Write on this repo)
+#   wrangler secret put TURNSTILE_SECRET  (optional — Cloudflare Turnstile secret key)
+#
+# Non-secret config lives here as plain vars.
+[vars]
+GITHUB_REPO = "geekgizmo999/kenya-chess-tracker"
+GITHUB_BRANCH = "main"
+ADDITIONS_PATH = "additions.json"
+# Comma-separated list of origins allowed to call the endpoint.
+ALLOWED_ORIGINS = "https://kenya-chess-tracker.onrender.com,https://kenya-chess-tracker.netlify.app,http://localhost:8100"
