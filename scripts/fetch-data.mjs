@@ -16,8 +16,9 @@ const COUNTRY_CODE = "KE";
 // even if they later do show up in the country list too.
 const MANUAL_ADDITIONS = [
   "simonwangombe",
-  // "Elishahezekiah",
-   // "lolbulinda", 
+  "elishahezekiah",
+  "lolbulinda",
+  
 ];
 const CONCURRENCY = 8;        // how many players are processed at once
 const DELAY_MS = 120;         // pause between requests per worker, stay polite to the API
