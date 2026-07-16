@@ -17,6 +17,9 @@ const COUNTRY_CODE = "KE";
 const MANUAL_ADDITIONS = [
   "simonwangombe",
   // "Elishahezekiah",
+  "lolbulinda"
+  "Perky_Peril"
+  "Kenyaan_coco"
 ];
 const CONCURRENCY = 8;        // how many players are processed at once
 const DELAY_MS = 120;         // pause between requests per worker, stay polite to the API
